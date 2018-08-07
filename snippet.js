@@ -47,13 +47,13 @@ document.write(
             "<p id='usernameText'>Benutzername: </p><input id='username' type='text' placeholder='Username'><br>" +
             "<p id='passwordText'>Passwort: </p><input id='password' type='password' placeholder='Password'>" +
 
-            "<p id='payWith'>Bezahle mit: </p>" +
+            /*"<p id='payWith'>Bezahle mit: </p>" +
 
             "<select>" +
                 "<option id='paypal' value='paypal'>PayPal</option>" +
                 "<option id='directly' value='directly'>Sofort</option>" +
                 "<option id='paymentInAdvance' value='paymentInAdvance'>Vorkasse</option>" +
-            "</select>" +
+            "</select>" +*/
 
             "<br><br><button id='confirm' value='confirm' onclick='customerLogin(getUsername(), getUserPassword())'>Best&auml;tigen</button>" +
 
@@ -382,7 +382,6 @@ function paymentRequest(data){
             },
         ];
         const paymentDetails = {
-            id: "super-store-order-123-12312",
             displayItems: [
                 {
                     label: productName,
@@ -398,16 +397,18 @@ function paymentRequest(data){
                         value: price.calculatedTaxes[0].tax
                     }
                 }
-            ],/*
+            ],
             shippingOptions: [
                 {
+                    id: "standart",
                     label: shipping.shippingMethod.name,
                     amount:{
                         currency: 'EUR',
                         value: shipping.shippingCosts.totalPrice
-                    }
+                    },
+                    selected: true,
                 }
-            ],*/
+            ],
             total: {
                 label: "Gesamtpreis",
                 amount:{
@@ -418,13 +419,12 @@ function paymentRequest(data){
             }
         };
 
-        //Object.assign(details, { shippingOptions });
+        //Object.assign(paymentDetails, { shippingOptions });
 
         // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
             requestPayerName: true,
-            requestPayerPhone: false,
             requestShipping: true,
         };
 
@@ -467,11 +467,7 @@ function paymentRequest(data){
                 console.error('Fehler:', error);
             });
 
-        new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
-
-        const creditCardPaymentMethod = {
-            supportedMethods: 'basic-card',
-        };
+        //new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
 
     } else {
         // Fallback to traditional checkout
