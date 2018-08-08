@@ -46,17 +46,8 @@ document.write(
 
             "<p id='usernameText'>Benutzername: </p><input id='username' type='text' placeholder='Username'><br>" +
             "<p id='passwordText'>Passwort: </p><input id='password' type='password' placeholder='Password'>" +
-
-            /*"<p id='payWith'>Bezahle mit: </p>" +
-
-            "<select>" +
-                "<option id='paypal' value='paypal'>PayPal</option>" +
-                "<option id='directly' value='directly'>Sofort</option>" +
-                "<option id='paymentInAdvance' value='paymentInAdvance'>Vorkasse</option>" +
-            "</select>" +*/
-
-            "<br><br><button id='confirm' value='confirm' onclick='customerLogin(getUsername(), getUserPassword())'>Best&auml;tigen</button>" +
-
+    
+            "<br><br><button id='confirm' value='confirm' onclick='addItemToCart(1)'>Best&auml;tigen</button>" +
         "</div>"
 );
 
@@ -75,7 +66,6 @@ let firstClick = false;
 
 function buy() {
     if(!firstClick){
-        addItemToCart(1);
         firstClick = true;
     }
     if(!down)
@@ -194,7 +184,7 @@ function addItemToCart(quantity){
             console.log(JSON.parse(this.responseText));
             readCart();
             let data = JSON.parse(this.responseText).data;
-
+            customerLogin(getUsername(), getUserPassword());
             paymentRequest(data); // Google payment request API
         }
     });
@@ -236,7 +226,8 @@ function customerLogin(username, password){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            order();
+            console.log(this.responseText);
+            //order();
         }
     });
 
@@ -259,6 +250,7 @@ function order(){
             successfulOrder(JSON.parse(this.responseText));
             readCart();
             document.getElementById('billingAddress').style.display = "block";
+            return JSON.parse(this.responseText);
         }
     });
 
@@ -376,10 +368,10 @@ function paymentRequest(data){
             {
                 supportedMethods: 'basic-card',
                 data: {
-                    supportedNetworks: ["visa", "mastercard"],
+                    supportedNetworks: ["visa", "mastercard", "amex"],
                     supportedTypes: ["debit", "credit"],
                 },
-            },
+            }
         ];
         const paymentDetails = {
             displayItems: [
@@ -400,7 +392,7 @@ function paymentRequest(data){
             ],
             shippingOptions: [
                 {
-                    id: "standart",
+                    id: shipping.shippingMethod.id,
                     label: shipping.shippingMethod.name,
                     amount:{
                         currency: 'EUR',
@@ -430,45 +422,39 @@ function paymentRequest(data){
 
         //new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
 
-        const request = new PaymentRequest(
+        const paymentRequest = new PaymentRequest(
             supportedPaymentMethods,
             paymentDetails,
             options
         );
 
-        // Call when you wish to show the UI to the user.
-        request.show()
-            .then((paymentResponse) => {
-                // Zugriff auf die vom Nutzer
-                // eingegebenen Daten.
-                const {
-                    requestId,
-                    methodName,
-                    details,
-                    shipping,
-                    shippingOption,
-                    payerName,
-                    payerEmail,
-                    payerPhone
-                } = paymentResponse;
-                // verify() als imaginäre Funktion, mit der
-                // die Bezahlanfrage mit der Serverseite überprüft wird
-                verify(paymentResponse).then((success) => {
-                    if (success) {
-                        console.log('Bezahlung erfolgreich durchgeführt');
-                        return paymentResponse.complete('success');
-                    } else {
-                        console.error('Fehler bei Bezahlung');
-                        return paymentResponse.complete('failure');
-                    }
-                });
+        return paymentRequest.show()
+            .then(r => {
+                // The UI will show a spinner to the user until
+                // `paymentRequest.complete()` is called.
+                response = r;
+                let data = r.toJSON();
+                console.log(data);
+                return data;
             })
-            .catch((error) => {
-                console.error('Fehler:', error);
+            .then(data => {
+                //return sendToServer(data);
+            })
+            .then(() => {
+                response.complete('success');
+                return response;
+            })
+            .catch(e => {
+                if (response) {
+                    console.error(e);
+                    response.complete('fail');
+                } else if (e.code !== e.ABORT_ERR) {
+                    console.error(e);
+                    throw e;
+                } else {
+                    return null;
+                }
             });
-
-        //new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
-
     } else {
         // Fallback to traditional checkout
         window.location.href = '/checkout/traditional';
