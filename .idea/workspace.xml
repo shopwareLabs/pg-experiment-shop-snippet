@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1583ca6a-2bfd-4012-9fed-cda894c1387d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/snippet.js" beforeDir="false" afterPath="$PROJECT_DIR$/snippet.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -23,13 +24,14 @@
           <entry key="project.open.time.5" value="2" />
           <entry key="project.open.time.6" value="1" />
           <entry key="project.open.time.7" value="2" />
+          <entry key="project.open.time.8" value="1" />
           <entry key="project.open.time.9" value="3" />
-          <entry key="project.opened" value="15" />
+          <entry key="project.opened" value="16" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="css" value="2" />
+          <entry key="css" value="4" />
           <entry key="html" value="2" />
           <entry key="js" value="5" />
           <entry key="ts" value="1" />
@@ -37,7 +39,7 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="CSS" value="2" />
+          <entry key="CSS" value="4" />
           <entry key="HTML" value="2" />
           <entry key="JavaScript" value="5" />
           <entry key="TypeScript" value="1" />
@@ -46,15 +48,15 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="css" value="3061" />
-          <entry key="html" value="472" />
-          <entry key="js" value="13565" />
+          <entry key="html" value="520" />
+          <entry key="js" value="14326" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CSS" value="3061" />
-          <entry key="HTML" value="484" />
-          <entry key="JavaScript" value="13553" />
+          <entry key="HTML" value="532" />
+          <entry key="JavaScript" value="14314" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.php.new.class" />
@@ -70,26 +72,32 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
-              <caret line="3" selection-start-line="3" selection-end-line="3" />
+            <state relative-caret-position="1057">
+              <caret line="169" column="289" selection-start-line="169" selection-start-column="289" selection-end-line="169" selection-end-column="289" />
             </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/css/theme.css">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/css/style.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-324" />
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/snippet.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="337">
-              <caret line="48" column="4" selection-start-line="48" selection-start-column="4" selection-end-line="48" selection-end-column="4" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/style.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1854">
-              <caret line="103" column="12" selection-start-line="103" selection-start-column="12" selection-end-line="103" selection-end-column="12" />
+            <state relative-caret-position="365">
+              <caret line="217" column="1" lean-forward="true" selection-start-line="217" selection-start-column="1" selection-end-line="217" selection-end-column="1" />
+              <folding>
+                <element signature="e#369#375#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -128,6 +136,7 @@
       <find>paymentRequest</find>
       <find>payment</find>
       <find>order</find>
+      <find>billingAddress</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -157,7 +166,7 @@
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="67" />
     <option name="y" value="25" />
-    <option name="width" value="3373" />
+    <option name="width" value="1687" />
     <option name="height" value="1415" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -166,7 +175,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -174,10 +182,16 @@
               <item name="shop-snippet" type="b2602c69:ProjectViewProjectNode" />
               <item name="shop-snippet" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="shop-snippet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="shop-snippet" type="462c0819:PsiDirectoryNode" />
+              <item name="css" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -225,18 +239,19 @@
       <workItem from="1533274542449" duration="15832000" />
       <workItem from="1533536214236" duration="28729000" />
       <workItem from="1533619494561" duration="21948000" />
-      <workItem from="1533708807513" duration="3381000" />
+      <workItem from="1533708807513" duration="6909000" />
+      <workItem from="1533719582723" duration="11368000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="156119000" />
+    <option name="totallyTimeSpent" value="171015000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="3373" height="1415" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.118725576" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11932672" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -271,13 +286,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="54">
-          <caret line="3" selection-start-line="3" selection-end-line="3" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/style.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1854">
@@ -285,10 +293,28 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/css/theme.css">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/style.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-324" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1057">
+          <caret line="169" column="289" selection-start-line="169" selection-start-column="289" selection-end-line="169" selection-end-column="289" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/snippet.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="337">
-          <caret line="48" column="4" selection-start-line="48" selection-start-column="4" selection-end-line="48" selection-end-column="4" />
+        <state relative-caret-position="365">
+          <caret line="217" column="1" lean-forward="true" selection-start-line="217" selection-start-column="1" selection-end-line="217" selection-end-column="1" />
+          <folding>
+            <element signature="e#369#375#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

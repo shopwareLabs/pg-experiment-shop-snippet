@@ -15,6 +15,7 @@ let contextToken;
 connect();
 
 // Language
+
 document.write(
     "<select id='languages' onchange='setLanguage(this)'>" +
         "<option id='german' value='de'>Deutsch</option>" +
@@ -35,9 +36,6 @@ document.write(
     "</div>"
 );
 
-// Purchase form
-let down = false;
-
 document.write(
     "<div id='purchaseForm'>" +
         "<button id='buyNow' onclick='buy()'>Jetzt kaufen</button>" +
@@ -46,7 +44,7 @@ document.write(
 
             "<p id='usernameText'>Benutzername: </p><input id='username' type='text' placeholder='Username'><br>" +
             "<p id='passwordText'>Passwort: </p><input id='password' type='password' placeholder='Password'>" +
-    
+
             "<br><br><button id='confirm' value='confirm' onclick='addItemToCart(1)'>Best&auml;tigen</button>" +
         "</div>"
 );
@@ -61,6 +59,9 @@ document.write(
         "<p id='customerCountry'></p>" +
     "</div>"
 );
+
+// Purchase form
+let down = false;
 
 let firstClick = false;
 
@@ -114,7 +115,7 @@ function query() {
             document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
             document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
             document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
-            getStockInfo(obj);
+            //getStockInfo(obj);
 
             document.getElementById('productImage').src = getImageByType(obj, 'media');
         }
@@ -156,8 +157,8 @@ function readCart(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
-            document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
+            //document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
+            //document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
         }
     });
 
@@ -184,7 +185,7 @@ function addItemToCart(quantity){
             console.log(JSON.parse(this.responseText));
             readCart();
             let data = JSON.parse(this.responseText).data;
-            customerLogin(getUsername(), getUserPassword());
+            //customerLogin(getUsername(), getUserPassword());
             paymentRequest(data); // Google payment request API
         }
     });
@@ -227,7 +228,7 @@ function customerLogin(username, password){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             console.log(this.responseText);
-            //order();
+            order();
         }
     });
 
@@ -250,11 +251,42 @@ function order(){
             successfulOrder(JSON.parse(this.responseText));
             readCart();
             document.getElementById('billingAddress').style.display = "block";
-            return JSON.parse(this.responseText);
+            //return JSON.parse(this.responseText);
         }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/order");
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function registration(customerData){
+    let customer = customerData;
+    let data = JSON.stringify({
+        salutation: "Herr",
+        firstName: "Test",
+        lastName: customer.payerName,
+        email: customer.payerEmail,
+        password: "password",
+        billingCountry: "20080911ffff4fffafffffff19830531",
+        billingZipcode: customer.details.billingAddress.postalCode,
+        billingCity: customer.details.billingAddress.city,
+        billingStreet: customer.details.billingAddress.addressLine[0]
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log(this.responseText);
+            customerLogin(data.email, data.password);
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/customer");
     xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("Authorization", accessToken);
@@ -358,6 +390,7 @@ function setLanguage(id){
 }
 
 function paymentRequest(data){
+    // lineItems mit dem Index 0, weil der Einkaufswagen nur mit einem Artikel befüllt wird
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries[0];
@@ -439,6 +472,7 @@ function paymentRequest(data){
             })
             .then(data => {
                 //return sendToServer(data);
+                registration(data);
             })
             .then(() => {
                 response.complete('success');
