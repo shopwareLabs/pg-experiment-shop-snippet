@@ -14,7 +14,277 @@ let contextToken;
 
 connect();
 
+function connect() {
+    let data = JSON.stringify({
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "grant_type": grant_type
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function () {
+        if(this.readyState === 4) {
+            accessToken = JSON.parse(this.responseText).access_token;
+            query();
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/oauth/token");
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.send(data);
+}
+
+function query() {
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function () {
+        if(this.readyState === 4) {
+            let obj = JSON.parse(this.responseText);
+            document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+            document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+            document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+            document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+            document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+            /*document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
+            document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
+            document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
+            //getStockInfo(obj);
+            document.getElementById('productImage').src = getImageByType(obj, 'media');*/
+        }
+    });
+
+    xhr.open("GET", host + "/storefront-api/product/" + id);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function createCart(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+       if(this.readyState === 4){
+           contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
+           addItemToCart(1);
+       }
+    });
+
+    xhr.open("POST", host + "/storefront-api/checkout/cart");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    if (contextToken) {
+        xhr.setRequestHeader("x-sw-context-token", contextToken);
+    }
+
+    xhr.send(data);
+}
+
+function addItemToCart(quantity){
+    let data = JSON.stringify({
+        "type": "product",
+        "quantity": quantity,
+        "payload": {
+            "id": id
+        }
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log(JSON.parse(this.responseText));
+            let data = JSON.parse(this.responseText).data;
+            paymentRequest(data); // Google payment request API
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function customerLogin(username, password){
+    let data = JSON.stringify({
+        "username": username,
+        "password": password
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log("Customer login: " + this.responseText);
+            order();
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/customer/login");
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function order(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log(this.responseText);
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/checkout/order");
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function registration(customer){
+    let data = JSON.stringify({
+        salutation: "Herr",
+        firstName: "Test",
+        lastName: customer.payerName,
+        email: customer.payerEmail,
+        password: "password",
+        billingCountry: "20080911ffff4fffafffffff19830531",
+        billingZipcode: customer.details.billingAddress.postalCode,
+        billingCity: customer.details.billingAddress.city,
+        billingStreet: customer.details.billingAddress.addressLine[0]
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log("data: " , JSON.parse(data).email);
+
+            let email = JSON.parse(data).email;
+            let password = JSON.parse(data).password;
+
+            customerLogin(email, password);
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/customer");
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function getImageByType(data, type) {
+    return data.included
+        .filter((item) => {
+            return item.type === type;
+        }).map((item) => {
+            return item.attributes;
+        })[0].links.url;
+}
+
+function paymentRequest(data){
+    // lineItems mit dem Index 0, weil der Einkaufswagen nur mit einem Artikel befüllt wird
+    let productName = data.lineItems[0].label;
+    let price = data.price;
+    let shipping = data.deliveries[0];
+
+    if(window.PaymentRequest) {
+        // Die zur Verfügung stehende Bezahlmethoden
+        const supportedPaymentMethods = [
+            {
+                supportedMethods: 'basic-card',
+                data: {
+                    supportedNetworks: ["visa", "mastercard", "amex"],
+                    supportedTypes: ["debit", "credit"],
+                },
+            }
+        ];
+        const paymentDetails = {
+            displayItems: [
+                {
+                    label: productName,
+                    amount: {
+                        currency: 'EUR',
+                        value: price.netPrice
+                    }
+                },
+                {
+                    label: "MwSt",
+                    amount: {
+                        currency: "EUR",
+                        value: price.calculatedTaxes[0].tax
+                    }
+                }
+            ],
+            shippingOptions: [
+                {
+                    id: shipping.shippingMethod.id,
+                    label: shipping.shippingMethod.name,
+                    amount:{
+                        currency: 'EUR',
+                        value: shipping.shippingCosts.totalPrice
+                    },
+                    selected: true,
+                }
+            ],
+            total: {
+                label: "Gesamtpreis",
+                amount:{
+                    currency: 'EUR',
+                    value: price.totalPrice
+                }
+
+            }
+        };
+
+        // Konfiguration der Pflichtangaben
+        const options = {
+            requestPayerEmail: true,
+            requestPayerName: true,
+            requestShipping: true,
+        };
+
+        const paymentRequest = new PaymentRequest(
+            supportedPaymentMethods,
+            paymentDetails,
+            options
+        );
+
+        return paymentRequest.show()
+            .then(paymentResponse => {
+                data = paymentResponse;
+
+                registration(data);
+
+                return paymentResponse.complete();
+            })
+            .catch(err => console.error(err));
+    } else {
+        // Fallback to traditional checkout
+        window.location.href = '/checkout/traditional';
+    }
+}
+
+/* <trash>
+
 // Language
+
 document.write(
     "<select id='languages' onchange='setLanguage(this)'>" +
         "<option id='german' value='de'>Deutsch</option>" +
@@ -35,20 +305,10 @@ document.write(
     "</div>"
 );
 
-// Purchase form
-let down = false;
-
 document.write(
     "<div id='purchaseForm'>" +
-        "<button id='buyNow' onclick='buy()'>Jetzt kaufen</button>" +
-
-        "<div id='showForm'>" +
-
-            "<p id='usernameText'>Benutzername: </p><input id='username' type='text' placeholder='Username'><br>" +
-            "<p id='passwordText'>Passwort: </p><input id='password' type='password' placeholder='Password'>" +
-    
-            "<br><br><button id='confirm' value='confirm' onclick='addItemToCart(1)'>Best&auml;tigen</button>" +
-        "</div>"
+        "<button onclick='createCart()'>Jetzt kaufen</button>" +
+    "</div>"
 );
 
 document.write(
@@ -61,6 +321,9 @@ document.write(
         "<p id='customerCountry'></p>" +
     "</div>"
 );
+
+// Purchase form
+let down = false;
 
 let firstClick = false;
 
@@ -79,75 +342,6 @@ function buy() {
     }
 }
 
-function connect() {
-    let data = JSON.stringify({
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": grant_type
-    });
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if(this.readyState === 4) {
-            accessToken = JSON.parse(this.responseText).access_token;
-            query();
-            createCart();
-            readCart();
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/oauth/token");
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.send(data);
-}
-
-function query() {
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if(this.readyState === 4) {
-            let obj = JSON.parse(this.responseText);
-            document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
-            document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
-            document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
-            getStockInfo(obj);
-
-            document.getElementById('productImage').src = getImageByType(obj, 'media');
-        }
-    });
-
-    xhr.open("GET", host + "/storefront-api/product/" + id);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    xhr.send(data);
-}
-
-function createCart(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-       if(this.readyState === 4){
-           contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-       }
-    });
-
-    xhr.open("POST", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    if (contextToken) {
-        xhr.setRequestHeader("x-sw-context-token", contextToken);
-    }
-
-    xhr.send(data);
-}
-
 function readCart(){
     let data = null;
 
@@ -156,43 +350,14 @@ function readCart(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
-            document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
+            //document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
+            //document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
         }
     });
 
     xhr.open("GET", host + "/storefront-api/checkout/cart");
     xhr.setRequestHeader("Authorization", accessToken);
     xhr.setRequestHeader("x-sw-context-token", contextToken);
-
-    xhr.send(data);
-}
-
-function addItemToCart(quantity){
-    let data = JSON.stringify({
-        "type": "product",
-        "quantity": quantity,
-        "payload": {
-            "id": id
-        }
-    });
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(JSON.parse(this.responseText));
-            readCart();
-            let data = JSON.parse(this.responseText).data;
-            customerLogin(getUsername(), getUserPassword());
-            paymentRequest(data); // Google payment request API
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
 
     xhr.send(data);
 }
@@ -216,52 +381,6 @@ function changeItemQuantity(quantity){
     xhr.send(data);
 }
 
-function customerLogin(username, password){
-    let data = JSON.stringify({
-        "username": username,
-        "password": password
-    });
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(this.responseText);
-            //order();
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/customer/login");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    xhr.send(data);
-}
-
-function order(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(this.responseText);
-            successfulOrder(JSON.parse(this.responseText));
-            readCart();
-            document.getElementById('billingAddress').style.display = "block";
-            return JSON.parse(this.responseText);
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/checkout/order");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    xhr.send(data);
-}
-
 function getStockInfo(obj){
     let stock = parseInt(obj.data.attributes.stock);
     if(stock > 10){
@@ -278,15 +397,6 @@ function getStockInfo(obj){
     }
 }
 
-function getImageByType(data, type) {
-    return data.included
-        .filter((item) => {
-            return item.type === type;
-        }).map((item) => {
-            return item.attributes;
-        })[0].links.url;
-}
-
 function getUsername(){
     return document.getElementById('username').value;
 }
@@ -297,8 +407,9 @@ function getUserPassword(){
 
 function successfulOrder(response){
     if(response.data){
-        console.log(response);
-        let billingAddress = response.data.billingAddress;
+        //console.log(response);
+        //alert(response);
+        /*let billingAddress = response.data.billingAddress;
 
         document.getElementById('customerThank').innerHTML = "Vielen Dank f&uuml;r Ihre Bestellung!";
         document.getElementById('customerDates').innerHTML = "Ihre Daten:";
@@ -356,107 +467,4 @@ function setLanguage(id){
         document.getElementById('total').innerHTML = "Total amount:";
     }
 }
-
-function paymentRequest(data){
-    let productName = data.lineItems[0].label;
-    let price = data.price;
-    let shipping = data.deliveries[0];
-
-    if(window.PaymentRequest) {
-        // Die zur Verfügung stehende Bezahlmethoden
-        const supportedPaymentMethods = [
-            {
-                supportedMethods: 'basic-card',
-                data: {
-                    supportedNetworks: ["visa", "mastercard", "amex"],
-                    supportedTypes: ["debit", "credit"],
-                },
-            }
-        ];
-        const paymentDetails = {
-            displayItems: [
-                {
-                    label: productName,
-                    amount: {
-                        currency: 'EUR',
-                        value: price.netPrice
-                    }
-                },
-                {
-                    label: "MwSt",
-                    amount: {
-                        currency: "EUR",
-                        value: price.calculatedTaxes[0].tax
-                    }
-                }
-            ],
-            shippingOptions: [
-                {
-                    id: shipping.shippingMethod.id,
-                    label: shipping.shippingMethod.name,
-                    amount:{
-                        currency: 'EUR',
-                        value: shipping.shippingCosts.totalPrice
-                    },
-                    selected: true,
-                }
-            ],
-            total: {
-                label: "Gesamtpreis",
-                amount:{
-                    currency: 'EUR',
-                    value: price.totalPrice
-                }
-
-            }
-        };
-
-        //Object.assign(paymentDetails, { shippingOptions });
-
-        // Konfiguration der Pflichtangaben
-        const options = {
-            requestPayerEmail: true,
-            requestPayerName: true,
-            requestShipping: true,
-        };
-
-        //new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
-
-        const paymentRequest = new PaymentRequest(
-            supportedPaymentMethods,
-            paymentDetails,
-            options
-        );
-
-        return paymentRequest.show()
-            .then(r => {
-                // The UI will show a spinner to the user until
-                // `paymentRequest.complete()` is called.
-                response = r;
-                let data = r.toJSON();
-                console.log(data);
-                return data;
-            })
-            .then(data => {
-                //return sendToServer(data);
-            })
-            .then(() => {
-                response.complete('success');
-                return response;
-            })
-            .catch(e => {
-                if (response) {
-                    console.error(e);
-                    response.complete('fail');
-                } else if (e.code !== e.ABORT_ERR) {
-                    console.error(e);
-                    throw e;
-                } else {
-                    return null;
-                }
-            });
-    } else {
-        // Fallback to traditional checkout
-        window.location.href = '/checkout/traditional';
-    }
-}
+</trash> */
