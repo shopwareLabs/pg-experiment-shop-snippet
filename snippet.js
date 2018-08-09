@@ -38,15 +38,8 @@ document.write(
 
 document.write(
     "<div id='purchaseForm'>" +
-        "<button id='buyNow' onclick='buy()'>Jetzt kaufen</button>" +
-
-        "<div id='showForm'>" +
-
-            "<p id='usernameText'>Benutzername: </p><input id='username' type='text' placeholder='Username'><br>" +
-            "<p id='passwordText'>Passwort: </p><input id='password' type='password' placeholder='Password'>" +
-
-            "<br><br><button id='confirm' value='confirm' onclick='addItemToCart(1)'>Best&auml;tigen</button>" +
-        "</div>"
+        "<button id='buyNow' onclick='addItemToCart(1)'>Jetzt kaufen</button>" +
+    "</div>"
 );
 
 document.write(
@@ -227,8 +220,8 @@ function customerLogin(username, password){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log(this.responseText);
-            order();
+            console.log(JSON.parse(this.responseText));
+            //order();
         }
     });
 
@@ -352,6 +345,7 @@ function setLanguage(id){
         document.getElementById('german').innerHTML = "Deutsch";
         document.getElementById('english').innerHTML = "Englisch";
 
+        /*
         document.getElementById('buyNow').innerHTML = "Jetzt kaufen";
 
         document.getElementById('usernameText').innerHTML = "Benutzername:";
@@ -366,6 +360,7 @@ function setLanguage(id){
 
         document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb:";
         document.getElementById('total').innerHTML = "Gesamtbetrag:";
+        */
     }
 
     else if(language === "en")
@@ -373,6 +368,7 @@ function setLanguage(id){
         document.getElementById('german').innerHTML = "German";
         document.getElementById('english').innerHTML = "English";
 
+        /*
         document.getElementById('buyNow').innerHTML = "Buy now";
 
         document.getElementById('usernameText').innerHTML = "Username:";
@@ -386,6 +382,7 @@ function setLanguage(id){
 
         document.getElementById('productsInCart').innerHTML = "Product number in the Cart:";
         document.getElementById('total').innerHTML = "Total amount:";
+        */
     }
 }
 
