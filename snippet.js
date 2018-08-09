@@ -1,12 +1,13 @@
 // Host
-let host = document.getElementById('id').dataset.host;
+let host = configuration.host;
 
 // Product ID
-let id = document.getElementById('id').dataset.uuid;
+let id = configuration.uuid;
 
-let client_id = document.getElementById('id').dataset.client_id;
-let client_secret = document.getElementById('id').dataset.client_secret;
-let grant_type = document.getElementById('id').dataset.grant_type;
+// Client data
+let client_id = configuration.client_id;
+let client_secret = configuration.client_secret;
+let grant_type = configuration.grant_type;
 
 // Token
 let accessToken;
@@ -99,7 +100,6 @@ function addItemToCart(quantity){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log(JSON.parse(this.responseText));
             let data = JSON.parse(this.responseText).data;
             paymentRequest(data); // Google payment request API
         }
@@ -123,7 +123,6 @@ function customerLogin(username, password){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log("Customer login: " + this.responseText);
             order();
         }
     });
@@ -143,7 +142,7 @@ function order(){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log(this.responseText);
+            console.log("Order: ", JSON.parse(this.responseText));
         }
     });
 
@@ -172,7 +171,6 @@ function registration(customer){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log("data: " , JSON.parse(data).email);
 
             let email = JSON.parse(data).email;
             let password = JSON.parse(data).password;
@@ -269,7 +267,6 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
-
                 registration(data);
 
                 return paymentResponse.complete();
@@ -279,6 +276,37 @@ function paymentRequest(data){
         // Fallback to traditional checkout
         window.location.href = '/checkout/traditional';
     }
+}
+
+function getCountryId(name) {
+    let countryId;
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            // console.log("Country: " , JSON.parse(this.responseText).data);
+            // let countries = JSON.parse(this.responseText).data[0].attributes.name;
+
+            let countries = JSON.parse(this.responseText).data;
+
+            //console.log("Länder", countries);
+
+            for(let i = 0; i < countries.length; i++){
+                if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
+                    countryId = countries[i].attributes.areaId;
+                }
+            }
+        }
+    });
+
+    xhr.open("GET", host + "/api/v1/country");
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
 }
 
 /* <trash>
