@@ -38,7 +38,7 @@ document.write(
 
 document.write(
     "<div id='purchaseForm'>" +
-        "<button id='buyNow' onclick='addItemToCart(1)'>Jetzt kaufen</button>" +
+        "<button onclick='createCart()'>Jetzt kaufen</button>" +
     "</div>"
 );
 
@@ -86,8 +86,6 @@ function connect() {
         if(this.readyState === 4) {
             accessToken = JSON.parse(this.responseText).access_token;
             query();
-            createCart();
-            readCart();
         }
     });
 
@@ -109,7 +107,6 @@ function query() {
             document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
             document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
             //getStockInfo(obj);
-
             document.getElementById('productImage').src = getImageByType(obj, 'media');
         }
     });
@@ -129,6 +126,7 @@ function createCart(){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
+           addItemToCart(1);
        }
     });
 
@@ -176,7 +174,7 @@ function addItemToCart(quantity){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             console.log(JSON.parse(this.responseText));
-            readCart();
+            //readCart();
             let data = JSON.parse(this.responseText).data;
             //customerLogin(getUsername(), getUserPassword());
             paymentRequest(data); // Google payment request API
@@ -220,8 +218,8 @@ function customerLogin(username, password){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log(JSON.parse(this.responseText));
-            //order();
+            console.log("Customer login: " + this.responseText);
+            order();
         }
     });
 
@@ -241,10 +239,6 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             console.log(this.responseText);
-            successfulOrder(JSON.parse(this.responseText));
-            readCart();
-            document.getElementById('billingAddress').style.display = "block";
-            //return JSON.parse(this.responseText);
         }
     });
 
@@ -256,8 +250,7 @@ function order(){
     xhr.send(data);
 }
 
-function registration(customerData){
-    let customer = customerData;
+function registration(customer){
     let data = JSON.stringify({
         salutation: "Herr",
         firstName: "Test",
@@ -274,8 +267,12 @@ function registration(customerData){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log(this.responseText);
-            customerLogin(data.email, data.password);
+            console.log("data: " , JSON.parse(data).email);
+
+            let email = JSON.parse(data).email;
+            let password = JSON.parse(data).password;
+
+            customerLogin(email, password);
         }
     });
 
@@ -322,8 +319,9 @@ function getUserPassword(){
 
 function successfulOrder(response){
     if(response.data){
-        console.log(response);
-        let billingAddress = response.data.billingAddress;
+        //console.log(response);
+        //alert(response);
+        /*let billingAddress = response.data.billingAddress;
 
         document.getElementById('customerThank').innerHTML = "Vielen Dank f&uuml;r Ihre Bestellung!";
         document.getElementById('customerDates').innerHTML = "Ihre Daten:";
@@ -332,6 +330,7 @@ function successfulOrder(response){
         document.getElementById('customerStreetName').innerHTML = billingAddress.street;
         document.getElementById('customerAddress').innerHTML = billingAddress.zipcode + " " + billingAddress.city;
         document.getElementById('customerCountry').innerHTML = billingAddress.country.name;
+        */
     }
     else if(response.errors){
         console.log("test");
@@ -459,33 +458,14 @@ function paymentRequest(data){
         );
 
         return paymentRequest.show()
-            .then(r => {
-                // The UI will show a spinner to the user until
-                // `paymentRequest.complete()` is called.
-                response = r;
-                let data = r.toJSON();
-                console.log(data);
-                return data;
-            })
-            .then(data => {
-                //return sendToServer(data);
+            .then(paymentResponse => {
+                data = paymentResponse;
+
                 registration(data);
+
+                return paymentResponse.complete();
             })
-            .then(() => {
-                response.complete('success');
-                return response;
-            })
-            .catch(e => {
-                if (response) {
-                    console.error(e);
-                    response.complete('fail');
-                } else if (e.code !== e.ABORT_ERR) {
-                    console.error(e);
-                    throw e;
-                } else {
-                    return null;
-                }
-            });
+            .catch(err => console.error(err));
     } else {
         // Fallback to traditional checkout
         window.location.href = '/checkout/traditional';
