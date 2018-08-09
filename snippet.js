@@ -14,65 +14,6 @@ let contextToken;
 
 connect();
 
-// Language
-
-document.write(
-    "<select id='languages' onchange='setLanguage(this)'>" +
-        "<option id='german' value='de'>Deutsch</option>" +
-        "<option id='english' value='en'>Englisch</option>" +
-    "</select>"
-);
-
-// Product data
-document.write(
-    "<div id='product'>"+
-        "<h2 id='productTitle'></h2>" +
-        "<p id='productDescription'></p>" +
-        "<img id='productImage'>" +
-        "<h3 id='productPrice'></h3>" +
-        "<h4 id='productStock'></h4>" +
-        "<p id='productsInCart'></p>" +
-        "<p id='total'></p>" +
-    "</div>"
-);
-
-document.write(
-    "<div id='purchaseForm'>" +
-        "<button onclick='createCart()'>Jetzt kaufen</button>" +
-    "</div>"
-);
-
-document.write(
-    "<div id='billingAddress'>" +
-        "<p id='customerThank'></p>" +
-        "<p id='customerDates'></p>" +
-        "<p id='customerName'></p>" +
-        "<p id='customerStreetName'></p>" +
-        "<p id='customerAddress'></p>" +
-        "<p id='customerCountry'></p>" +
-    "</div>"
-);
-
-// Purchase form
-let down = false;
-
-let firstClick = false;
-
-function buy() {
-    if(!firstClick){
-        firstClick = true;
-    }
-    if(!down)
-    {
-        document.getElementById("showForm").style.display = "block";
-        down = true;
-
-    } else {
-        document.getElementById("showForm").style.display = "none";
-        down = false;
-    }
-}
-
 function connect() {
     let data = JSON.stringify({
         "client_id": client_id,
@@ -103,11 +44,16 @@ function query() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
+            document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+            document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+            document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+            document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+            document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+            /*document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
             document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
             document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
             //getStockInfo(obj);
-            document.getElementById('productImage').src = getImageByType(obj, 'media');
+            document.getElementById('productImage').src = getImageByType(obj, 'media');*/
         }
     });
 
@@ -140,26 +86,6 @@ function createCart(){
     xhr.send(data);
 }
 
-function readCart(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            let obj = JSON.parse(this.responseText);
-            //document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
-            //document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
-        }
-    });
-
-    xhr.open("GET", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Authorization", accessToken);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-
-    xhr.send(data);
-}
-
 function addItemToCart(quantity){
     let data = JSON.stringify({
         "type": "product",
@@ -174,33 +100,12 @@ function addItemToCart(quantity){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             console.log(JSON.parse(this.responseText));
-            //readCart();
             let data = JSON.parse(this.responseText).data;
-            //customerLogin(getUsername(), getUserPassword());
             paymentRequest(data); // Google payment request API
         }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    xhr.send(data);
-}
-
-function changeItemQuantity(quantity){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(this.responseText)
-        }
-    });
-
-    xhr.open("PATCH", host + "/storefront-api/checkout/cart/line-item/" + id + "/quantity/" + quantity);
     xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("Authorization", accessToken);
@@ -284,22 +189,6 @@ function registration(customer){
     xhr.send(data);
 }
 
-function getStockInfo(obj){
-    let stock = parseInt(obj.data.attributes.stock);
-    if(stock > 10){
-        document.getElementById('productStock').innerHTML = "Auf Lager!";
-    }
-    else if(stock <= 10){
-        document.getElementById('productStock').innerHTML = "Nur noch wenige auf Lager! [" + stock + "]";
-    }
-    else if(stock <= 0){
-        document.getElementById('productStock').innerHTML = "Leider nicht mehr auf Lager!";
-    }
-    else{
-        document.getElementById('productStock').innerHTML = "Leider gibt es keine weiteren Informationen über den Bestand :(";
-    }
-}
-
 function getImageByType(data, type) {
     return data.included
         .filter((item) => {
@@ -307,82 +196,6 @@ function getImageByType(data, type) {
         }).map((item) => {
             return item.attributes;
         })[0].links.url;
-}
-
-function getUsername(){
-    return document.getElementById('username').value;
-}
-
-function getUserPassword(){
-    return document.getElementById('password').value;
-}
-
-function successfulOrder(response){
-    if(response.data){
-        //console.log(response);
-        //alert(response);
-        /*let billingAddress = response.data.billingAddress;
-
-        document.getElementById('customerThank').innerHTML = "Vielen Dank f&uuml;r Ihre Bestellung!";
-        document.getElementById('customerDates').innerHTML = "Ihre Daten:";
-
-        document.getElementById('customerName').innerHTML = billingAddress.salutation + " " + billingAddress.firstName + " " + billingAddress.lastName;
-        document.getElementById('customerStreetName').innerHTML = billingAddress.street;
-        document.getElementById('customerAddress').innerHTML = billingAddress.zipcode + " " + billingAddress.city;
-        document.getElementById('customerCountry').innerHTML = billingAddress.country.name;
-        */
-    }
-    else if(response.errors){
-        console.log("test");
-    }
-}
-
-function setLanguage(id){
-    let language = id.value;
-
-    if(language === "de"){
-        document.getElementById('german').innerHTML = "Deutsch";
-        document.getElementById('english').innerHTML = "Englisch";
-
-        /*
-        document.getElementById('buyNow').innerHTML = "Jetzt kaufen";
-
-        document.getElementById('usernameText').innerHTML = "Benutzername:";
-        document.getElementById('passwordText').innerHTML = "Passwort:";
-
-        document.getElementById('payWith').innerHTML = "Bezahle mit:";
-        document.getElementById('paypal').innerHTML = "PayPal";
-        document.getElementById('directly').innerHTML = "Sofort";
-        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
-        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
-        document.getElementById('confirm').innerHTML = "Best&aumltigen";
-
-        document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb:";
-        document.getElementById('total').innerHTML = "Gesamtbetrag:";
-        */
-    }
-
-    else if(language === "en")
-    {
-        document.getElementById('german').innerHTML = "German";
-        document.getElementById('english').innerHTML = "English";
-
-        /*
-        document.getElementById('buyNow').innerHTML = "Buy now";
-
-        document.getElementById('usernameText').innerHTML = "Username:";
-        document.getElementById('passwordText').innerHTML = "Password:";
-
-        document.getElementById('payWith').innerHTML = "Pay with:";
-        document.getElementById('paypal').innerHTML = "PayPal";
-        document.getElementById('directly').innerHTML = "Directly";
-        document.getElementById('paymentInAdvance').innerHTML = "Payment in advance";
-        document.getElementById('confirm').innerHTML = "Confirm";
-
-        document.getElementById('productsInCart').innerHTML = "Product number in the Cart:";
-        document.getElementById('total').innerHTML = "Total amount:";
-        */
-    }
 }
 
 function paymentRequest(data){
@@ -440,16 +253,12 @@ function paymentRequest(data){
             }
         };
 
-        //Object.assign(paymentDetails, { shippingOptions });
-
         // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
             requestPayerName: true,
             requestShipping: true,
         };
-
-        //new PaymentRequest(supportedPaymentMethods, paymentDetails, options);
 
         const paymentRequest = new PaymentRequest(
             supportedPaymentMethods,
@@ -471,3 +280,191 @@ function paymentRequest(data){
         window.location.href = '/checkout/traditional';
     }
 }
+
+/* <trash>
+
+// Language
+
+document.write(
+    "<select id='languages' onchange='setLanguage(this)'>" +
+        "<option id='german' value='de'>Deutsch</option>" +
+        "<option id='english' value='en'>Englisch</option>" +
+    "</select>"
+);
+
+// Product data
+document.write(
+    "<div id='product'>"+
+        "<h2 id='productTitle'></h2>" +
+        "<p id='productDescription'></p>" +
+        "<img id='productImage'>" +
+        "<h3 id='productPrice'></h3>" +
+        "<h4 id='productStock'></h4>" +
+        "<p id='productsInCart'></p>" +
+        "<p id='total'></p>" +
+    "</div>"
+);
+
+document.write(
+    "<div id='purchaseForm'>" +
+        "<button onclick='createCart()'>Jetzt kaufen</button>" +
+    "</div>"
+);
+
+document.write(
+    "<div id='billingAddress'>" +
+        "<p id='customerThank'></p>" +
+        "<p id='customerDates'></p>" +
+        "<p id='customerName'></p>" +
+        "<p id='customerStreetName'></p>" +
+        "<p id='customerAddress'></p>" +
+        "<p id='customerCountry'></p>" +
+    "</div>"
+);
+
+// Purchase form
+let down = false;
+
+let firstClick = false;
+
+function buy() {
+    if(!firstClick){
+        firstClick = true;
+    }
+    if(!down)
+    {
+        document.getElementById("showForm").style.display = "block";
+        down = true;
+
+    } else {
+        document.getElementById("showForm").style.display = "none";
+        down = false;
+    }
+}
+
+function readCart(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            let obj = JSON.parse(this.responseText);
+            //document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
+            //document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
+        }
+    });
+
+    xhr.open("GET", host + "/storefront-api/checkout/cart");
+    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+
+    xhr.send(data);
+}
+
+function changeItemQuantity(quantity){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log(this.responseText)
+        }
+    });
+
+    xhr.open("PATCH", host + "/storefront-api/checkout/cart/line-item/" + id + "/quantity/" + quantity);
+    xhr.setRequestHeader("x-sw-context-token", contextToken);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Authorization", accessToken);
+
+    xhr.send(data);
+}
+
+function getStockInfo(obj){
+    let stock = parseInt(obj.data.attributes.stock);
+    if(stock > 10){
+        document.getElementById('productStock').innerHTML = "Auf Lager!";
+    }
+    else if(stock <= 10){
+        document.getElementById('productStock').innerHTML = "Nur noch wenige auf Lager! [" + stock + "]";
+    }
+    else if(stock <= 0){
+        document.getElementById('productStock').innerHTML = "Leider nicht mehr auf Lager!";
+    }
+    else{
+        document.getElementById('productStock').innerHTML = "Leider gibt es keine weiteren Informationen über den Bestand :(";
+    }
+}
+
+function getUsername(){
+    return document.getElementById('username').value;
+}
+
+function getUserPassword(){
+    return document.getElementById('password').value;
+}
+
+function successfulOrder(response){
+    if(response.data){
+        //console.log(response);
+        //alert(response);
+        /*let billingAddress = response.data.billingAddress;
+
+        document.getElementById('customerThank').innerHTML = "Vielen Dank f&uuml;r Ihre Bestellung!";
+        document.getElementById('customerDates').innerHTML = "Ihre Daten:";
+
+        document.getElementById('customerName').innerHTML = billingAddress.salutation + " " + billingAddress.firstName + " " + billingAddress.lastName;
+        document.getElementById('customerStreetName').innerHTML = billingAddress.street;
+        document.getElementById('customerAddress').innerHTML = billingAddress.zipcode + " " + billingAddress.city;
+        document.getElementById('customerCountry').innerHTML = billingAddress.country.name;
+    }
+    else if(response.errors){
+        console.log("test");
+    }
+}
+
+function setLanguage(id){
+    let language = id.value;
+
+    if(language === "de"){
+        document.getElementById('german').innerHTML = "Deutsch";
+        document.getElementById('english').innerHTML = "Englisch";
+
+        document.getElementById('buyNow').innerHTML = "Jetzt kaufen";
+
+        document.getElementById('usernameText').innerHTML = "Benutzername:";
+        document.getElementById('passwordText').innerHTML = "Passwort:";
+
+        document.getElementById('payWith').innerHTML = "Bezahle mit:";
+        document.getElementById('paypal').innerHTML = "PayPal";
+        document.getElementById('directly').innerHTML = "Sofort";
+        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
+        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
+        document.getElementById('confirm').innerHTML = "Best&aumltigen";
+
+        document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb:";
+        document.getElementById('total').innerHTML = "Gesamtbetrag:";
+    }
+
+    else if(language === "en")
+    {
+        document.getElementById('german').innerHTML = "German";
+        document.getElementById('english').innerHTML = "English";
+
+        document.getElementById('buyNow').innerHTML = "Buy now";
+
+        document.getElementById('usernameText').innerHTML = "Username:";
+        document.getElementById('passwordText').innerHTML = "Password:";
+
+        document.getElementById('payWith').innerHTML = "Pay with:";
+        document.getElementById('paypal').innerHTML = "PayPal";
+        document.getElementById('directly').innerHTML = "Directly";
+        document.getElementById('paymentInAdvance').innerHTML = "Payment in advance";
+        document.getElementById('confirm').innerHTML = "Confirm";
+
+        document.getElementById('productsInCart').innerHTML = "Product number in the Cart:";
+        document.getElementById('total').innerHTML = "Total amount:";
+    }
+}
+</trash> */
