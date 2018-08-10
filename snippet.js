@@ -15,6 +15,12 @@ let contextToken;
 
 connect();
 
+function init(){
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", onReadystatechange);
+}
+
 function connect() {
     let data = JSON.stringify({
         "client_id": client_id,
@@ -28,6 +34,7 @@ function connect() {
         if(this.readyState === 4) {
             accessToken = JSON.parse(this.responseText).access_token;
             query();
+            getCountryId("Rumänien");
         }
     });
 
@@ -35,6 +42,23 @@ function connect() {
     xhr.setRequestHeader("Content-Type", "application/json");
 
     xhr.send(data);
+}
+
+function onReadystatechange(){
+    if(this.readyState === 4){
+        // console.log("Country: " , JSON.parse(this.responseText).data);
+        // let countries = JSON.parse(this.responseText).data[0].attributes.name;
+
+        let countries = JSON.parse(this.responseText).data;
+        console.log(countries);
+
+        for(let i = 0; i < countries.length; i++){
+            if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
+                countryId = countries[i].attributes.areaId;
+                return countryId;
+            }
+        }
+    }
 }
 
 function query() {
@@ -161,7 +185,7 @@ function registration(customer){
         lastName: customer.payerName,
         email: customer.payerEmail,
         password: "password",
-        billingCountry: "20080911ffff4fffafffffff19830531",
+        billingCountry: getCountryId(),
         billingZipcode: customer.details.billingAddress.postalCode,
         billingCity: customer.details.billingAddress.city,
         billingStreet: customer.details.billingAddress.addressLine[0]
@@ -279,27 +303,11 @@ function paymentRequest(data){
 }
 
 function getCountryId(name) {
-    let countryId;
+    let countryId = null;
     let data = null;
 
-    let xhr = new XMLHttpRequest();
+    onReadystatechange();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            // console.log("Country: " , JSON.parse(this.responseText).data);
-            // let countries = JSON.parse(this.responseText).data[0].attributes.name;
-
-            let countries = JSON.parse(this.responseText).data;
-
-            //console.log("Länder", countries);
-
-            for(let i = 0; i < countries.length; i++){
-                if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
-                    countryId = countries[i].attributes.areaId;
-                }
-            }
-        }
-    });
 
     xhr.open("GET", host + "/api/v1/country");
     xhr.setRequestHeader("x-sw-context-token", contextToken);
