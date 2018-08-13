@@ -28,6 +28,7 @@ function connect() {
         if(this.readyState === 4) {
             accessToken = JSON.parse(this.responseText).access_token;
             query();
+            //getCountryId("Deutschland");
         }
     });
 
@@ -50,11 +51,6 @@ function query() {
             document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
             document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
             document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
-            /*document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
-            document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
-            document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
-            //getStockInfo(obj);
-            document.getElementById('productImage').src = getImageByType(obj, 'media');*/
         }
     });
 
@@ -157,17 +153,36 @@ function order(){
 }
 
 function registration(customer){
-    let data = JSON.stringify({
-        salutation: "Herr",
-        firstName: "Test",
-        lastName: customer.payerName,
-        email: customer.payerEmail,
-        password: "password",
-        billingCountry: "20080911ffff4fffafffffff19830531",
-        billingZipcode: customer.details.billingAddress.postalCode,
-        billingCity: customer.details.billingAddress.city,
-        billingStreet: customer.details.billingAddress.addressLine[0]
-    });
+    let name = splitName(customer.details.billingAddress.recipient);
+    let data;
+
+    if(name.length > 1){
+        data = JSON.stringify({
+            salutation: "Herr",
+            firstName: name[0],
+            lastName: name[name.length-1],
+            email: customer.payerEmail,
+            password: "password",
+            billingCountry: "20080911ffff4fffafffffff19830531",
+            billingZipcode: customer.details.billingAddress.postalCode,
+            billingCity: customer.details.billingAddress.city,
+            billingStreet: customer.details.billingAddress.addressLine[0]
+        });
+    }
+
+    else {
+        data = JSON.stringify({
+            salutation: "Herr",
+            firstName: "Without first name",
+            lastName: name[0],
+            email: customer.payerEmail,
+            password: "password",
+            billingCountry: "20080911ffff4fffafffffff19830531",
+            billingZipcode: customer.details.billingAddress.postalCode,
+            billingCity: customer.details.billingAddress.city,
+            billingStreet: customer.details.billingAddress.addressLine[0]
+        });
+    }
 
     let xhr = new XMLHttpRequest();
 
@@ -196,6 +211,10 @@ function getImageByType(data, type) {
         }).map((item) => {
             return item.attributes;
         })[0].links.url;
+}
+
+function splitName(fullName){
+    return fullName.split(" ");
 }
 
 function paymentRequest(data){
