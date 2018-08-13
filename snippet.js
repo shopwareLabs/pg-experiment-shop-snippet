@@ -28,7 +28,6 @@ function connect() {
         if(this.readyState === 4) {
             accessToken = JSON.parse(this.responseText).access_token;
             query();
-            //getCountryId("Deutschland");
         }
     });
 
@@ -46,11 +45,7 @@ function query() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
-            document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
-            document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
-            document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
-            document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+            useConfig(obj);
         }
     });
 
@@ -155,6 +150,14 @@ function order(){
 function registration(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
+    /*
+    let countryId;
+
+    getCountryId("Deutschland").then(function (result) {
+        countryId = result;
+
+        console.log(countryId);
+    });*/
 
     if(name.length > 1){
         data = JSON.stringify({
@@ -299,32 +302,54 @@ function paymentRequest(data){
 }
 
 function getCountryId(name) {
-    let data = null;
+    return new Promise((resolve) => {
+        let data = null;
+        let countryId = null;
 
-    let xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            // console.log("Country: " , JSON.parse(this.responseText).data);
-            // let countries = JSON.parse(this.responseText).data[0].attributes.name;
+        xhr.addEventListener("readystatechange", function(){
+            if(this.readyState === 4){
+                let countries = JSON.parse(this.responseText).data;
 
-            let countries = JSON.parse(this.responseText).data;
-
-            for(let i = 0; i < countries.length; i++){
-                if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
-                    let countryId = countries[i].attributes.areaId;
-                    console.log(countryId);
+                for(let i = 0; i < countries.length; i++){
+                    if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
+                        countryId = countries[i].attributes.areaId;
+                        resolve(countryId);
+                    }
                 }
             }
-        }
+        });
+
+        xhr.open("GET", host + "/api/v1/country");
+        xhr.setRequestHeader("x-sw-context-token", contextToken);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Authorization", accessToken);
+
+        xhr.send(data);
     });
+}
 
-    xhr.open("GET", host + "/api/v1/country");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+function useConfig(obj){
+    if(configuration.titleSelector){
+        document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+    }
 
-    xhr.send(data);
+    if(configuration.descriptionSelector){
+        document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+    }
+
+    if(configuration.priceSelector){
+        document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+    }
+
+    if(configuration.imageSelector){
+        document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+    }
+
+    if(configuration.buttonSelector){
+        document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+    }
 }
 
 /* <trash>
