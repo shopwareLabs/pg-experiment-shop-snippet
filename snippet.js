@@ -1,3 +1,5 @@
+document.getElementsByTagName("BODY")[0].style.display = "none";
+
 // Host
 let host = configuration.host;
 
@@ -297,7 +299,6 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
-        // Fallback to traditional checkout
     }
 }
 
@@ -350,6 +351,8 @@ function useConfig(obj){
     if(configuration.buttonSelector){
         document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
     }
+
+    document.getElementsByTagName("BODY")[0].style.display = "block";
 }
 
 /* <trash>
