@@ -293,12 +293,61 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
+                console.log(data);
                 registration(data);
 
                 return paymentResponse.complete();
             })
             .catch(err => console.error(err));
     } else {
+        document.write(
+            "<div>" +
+
+                "<p>Alternative Checkout:</p>" +
+
+                "<p>" +
+                    productName +
+                "</p>" +
+
+                "<p>" +
+                    price.totalPrice + "€" +
+                "</p>" +
+
+                "<input id='alternative-name' type='text' name='Name' placeholder='Name'><br>" +
+
+                "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
+
+                "<select>" +
+                    "<option id='alternative-country' value='Deutschland'>Germany</option>\n" +
+                "</select><br>" +
+
+                "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
+
+                "<input id='alternative-postCode' type='text' name='PostCode' placeholder='Post code'><br>" +
+
+                "<input id='alternative-city' type='text' name='City' placeholder='City'><br>" +
+
+                "<button id='alternative-buy'>Buy</button>" +
+
+            "</div>"
+        );
+
+        document.getElementById('alternative-buy').onclick = function () {
+            let data = {
+                payerName: document.getElementById('alternative-name').value,
+                payerEmail: document.getElementById('alternative-email').value,
+                details: {
+                    billingAddress: {
+                        addressLine: [document.getElementById('alternative-address').value],
+                        city: document.getElementById('alternative-city').value,
+                        postalCode: document.getElementById('alternative-postCode').value,
+                        recipient: document.getElementById('alternative-name').value
+                    }
+                }
+            };
+            console.log(data);
+            registration(data)
+        }
     }
 }
 
