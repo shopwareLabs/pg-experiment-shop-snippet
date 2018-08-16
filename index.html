@@ -150,37 +150,57 @@
 
             <div class="product-description">
 
-                <h1>Additional Information</h1>
+                <h1 id="test-title2">Additional Information</h1>
 
-                <p>
+                <p id="test-description2">
                     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
                 </p>
 
-                <p>
+                <p id="test-price2">
                     Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
                 </p>
+
+                <a id="test-button2" href="#" class="btn btn-primary btn-buy">
+                    Jetzt kostenpflichtig bestellen
+
+                    <span><i class="fa fa-lock"></i> Sicher einkaufen über shopware.com</span>
+                </a>
 
             </div>
         </div>
         <div class="col-sm-6" style="padding-left:0">
-            <img src="img/product-2.jpg" width="100%" alt="Sample Product">
+            <img id="test-image2" src="img/product-2.jpg" width="100%" alt="Sample Product">
         </div>
     </div>
 </div>
 <script>
     let configuration = {
-        priceSelector: 'test-price',
-        titleSelector: 'test-title',
-        descriptionSelector: 'test-description',
-        imageSelector: 'test-image',
-        buttonSelector: 'test-button',
-
         host: 'http://localhost:8000',
-        uuid: '00342b6236a24364b2f5a5963c1e6066',
-        client_id: 'SWSCTEG5YKRREHLKBTBHZW1SCA',
-        client_secret: 'QkhDa0V2WEZnUUhjWU5xSk9hSGVZZVp2dXBTWWtWdnYwMlhtUFU',
+        access_token: 'SWSCWMFLA0PDTG5DAM1RUJE5UQ',
         grant_type: 'client_credentials'
-    }
+    };
+
+    let products = [
+
+        product1 = {
+            uuid: '000f786366a7417aab8f970de2e35608',
+            priceSelector: 'test-price',
+            titleSelector: 'test-title',
+            descriptionSelector: 'test-description',
+            imageSelector: 'test-image',
+            buttonSelector: 'test-button'
+        },
+
+        product2 = {
+            uuid: '003eeb8b033a4ce2a4f692674e4afca9',
+            priceSelector: 'test-price2',
+            titleSelector: 'test-title2',
+            descriptionSelector: 'test-description2',
+            imageSelector: 'test-image2',
+            buttonSelector: 'test-button2'
+        }
+
+    ];
 </script>
 <script src="snippet.js"></script>
 </body>

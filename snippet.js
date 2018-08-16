@@ -1,45 +1,34 @@
 document.getElementsByTagName("BODY")[0].style.display = "none";
 
 // Host
-let host = configuration.host;
+let host;
 
-// Product ID
-let id = configuration.uuid;
+// Product ID's
+let ids;
 
 // Client data
-let client_id = configuration.client_id;
-let client_secret = configuration.client_secret;
-let grant_type = configuration.grant_type;
+let grant_type;
 
 // Token
 let accessToken;
 let contextToken;
 
-connect();
+init();
 
-function connect() {
-    let data = JSON.stringify({
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": grant_type
-    });
+function init() {
+    host = configuration.host;
 
-    let xhr = new XMLHttpRequest();
+    accessToken = configuration.access_token;
+    grant_type = configuration.grant_type;
 
-    xhr.addEventListener("readystatechange", function () {
-        if(this.readyState === 4) {
-            accessToken = JSON.parse(this.responseText).access_token;
-            query();
-        }
-    });
+    ids = products.slice();
 
-    xhr.open("POST", host + "/storefront-api/oauth/token");
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.send(data);
+    for(let i = 0; i < ids.length; i++){
+        query(ids[i]);
+    }
 }
 
-function query() {
+function query(id) {
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -47,18 +36,18 @@ function query() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj);
+            useConfig(obj, id);
         }
     });
 
-    xhr.open("GET", host + "/storefront-api/product/" + id);
+    xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
 
-function createCart(){
+function createCart(id){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -66,24 +55,20 @@ function createCart(){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(1);
+           addItemToCart(id);
        }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    if (contextToken) {
-        xhr.setRequestHeader("x-sw-context-token", contextToken);
-    }
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
 
-function addItemToCart(quantity){
+function addItemToCart(id){
     let data = JSON.stringify({
         "type": "product",
-        "quantity": quantity,
+        "quantity": 1,
         "payload": {
             "id": id
         }
@@ -94,14 +79,14 @@ function addItemToCart(quantity){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data); // Google payment request API
+            paymentRequest(data);
         }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -121,9 +106,9 @@ function customerLogin(username, password){
     });
 
     xhr.open("POST", host + "/storefront-api/customer/login");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -136,15 +121,14 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            console.log("Order: ", obj);
             alert("Vielen Dank für Deine Bestellung, " + obj.data.billingAddress.lastName + "!\nDeine Ware wird an " + obj.data.billingAddress.street + " geliefert!");
         }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/order");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -203,9 +187,8 @@ function registration(customer){
     });
 
     xhr.open("POST", host + "/storefront-api/customer");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -272,11 +255,9 @@ function paymentRequest(data){
                     currency: 'EUR',
                     value: price.totalPrice
                 }
-
             }
         };
 
-        // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
             requestShipping: true,
@@ -343,7 +324,6 @@ function paymentRequest(data){
                     }
                 }
             };
-            console.log(data);
             registration(data)
         }
     }
@@ -370,33 +350,34 @@ function getCountryId(name) {
         });
 
         xhr.open("GET", host + "/api/v1/country");
-        xhr.setRequestHeader("x-sw-context-token", contextToken);
         xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Authorization", accessToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
         xhr.send(data);
     });
 }
 
-function useConfig(obj){
-    if(configuration.titleSelector){
-        document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+function useConfig(obj, id){
+    if(id.titleSelector){
+        document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
     }
 
-    if(configuration.descriptionSelector){
-        document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+    if(id.descriptionSelector){
+        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description;
     }
 
-    if(configuration.priceSelector){
-        document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+    if(id.priceSelector){
+        document.getElementById(id.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
     }
 
-    if(configuration.imageSelector){
-        document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+    if(id.imageSelector){
+        document.getElementById(id.imageSelector).src = getImageByType(obj, 'media');
     }
 
-    if(configuration.buttonSelector){
-        document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+    if(id.buttonSelector){
+        document.getElementById(id.buttonSelector).addEventListener("click", function(){
+            createCart(id.uuid);
+        });
     }
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
