@@ -1,3 +1,5 @@
+document.getElementsByTagName("BODY")[0].style.display = "none";
+
 // Host
 let host = configuration.host;
 
@@ -45,16 +47,7 @@ function query() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
-            document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
-            document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
-            document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
-            document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
-            /*document.getElementById('productTitle').innerHTML = obj.data.attributes.name;
-            document.getElementById('productDescription').innerHTML = obj.data.attributes.description;
-            document.getElementById('productPrice').innerHTML = obj.data.attributes.price.gross + " €";
-            //getStockInfo(obj);
-            document.getElementById('productImage').src = getImageByType(obj, 'media');*/
+            useConfig(obj);
         }
     });
 
@@ -142,7 +135,9 @@ function order(){
 
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
-            console.log("Order: ", JSON.parse(this.responseText));
+            let obj = JSON.parse(this.responseText);
+            console.log("Order: ", obj);
+            alert("Vielen Dank für Deine Bestellung, " + obj.data.billingAddress.lastName + "!\nDeine Ware wird an " + obj.data.billingAddress.street + " geliefert!");
         }
     });
 
@@ -155,17 +150,45 @@ function order(){
 }
 
 function registration(customer){
-    let data = JSON.stringify({
-        salutation: "Herr",
-        firstName: "Test",
-        lastName: customer.payerName,
-        email: customer.payerEmail,
-        password: "password",
-        billingCountry: "20080911ffff4fffafffffff19830531",
-        billingZipcode: customer.details.billingAddress.postalCode,
-        billingCity: customer.details.billingAddress.city,
-        billingStreet: customer.details.billingAddress.addressLine[0]
-    });
+    let name = splitName(customer.details.billingAddress.recipient);
+    let data;
+
+    /*
+    let countryId;
+
+    getCountryId("Deutschland").then(function (result) {
+        countryId = result;
+
+        console.log(countryId);
+    }); */
+
+    if(name.length > 1){
+        data = JSON.stringify({
+            salutation: "Herr",
+            firstName: name[0],
+            lastName: name[name.length-1],
+            email: customer.payerEmail,
+            password: "password",
+            billingCountry: "20080911ffff4fffafffffff19830531",
+            billingZipcode: customer.details.billingAddress.postalCode,
+            billingCity: customer.details.billingAddress.city,
+            billingStreet: customer.details.billingAddress.addressLine[0]
+        });
+    }
+
+    else {
+        data = JSON.stringify({
+            salutation: "Herr",
+            firstName: "Without first name",
+            lastName: name[0],
+            email: customer.payerEmail,
+            password: "password",
+            billingCountry: "20080911ffff4fffafffffff19830531",
+            billingZipcode: customer.details.billingAddress.postalCode,
+            billingCity: customer.details.billingAddress.city,
+            billingStreet: customer.details.billingAddress.addressLine[0]
+        });
+    }
 
     let xhr = new XMLHttpRequest();
 
@@ -192,18 +215,20 @@ function getImageByType(data, type) {
         .filter((item) => {
             return item.type === type;
         }).map((item) => {
-            return item.attributes;
+            return item.attributes.extensions;
         })[0].links.url;
 }
 
+function splitName(fullName){
+    return fullName.split(" ");
+}
+
 function paymentRequest(data){
-    // lineItems mit dem Index 0, weil der Einkaufswagen nur mit einem Artikel befüllt wird
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries[0];
 
     if(window.PaymentRequest) {
-        // Die zur Verfügung stehende Bezahlmethoden
         const supportedPaymentMethods = [
             {
                 supportedMethods: 'basic-card',
@@ -254,7 +279,6 @@ function paymentRequest(data){
         // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
-            requestPayerName: true,
             requestShipping: true,
         };
 
@@ -267,46 +291,115 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
+                console.log(data);
                 registration(data);
 
                 return paymentResponse.complete();
             })
             .catch(err => console.error(err));
     } else {
-        // Fallback to traditional checkout
-        window.location.href = '/checkout/traditional';
+        document.write(
+            "<div>" +
+
+                "<p>Alternative Checkout:</p>" +
+
+                "<p>" +
+                    productName +
+                "</p>" +
+
+                "<p>" +
+                    price.totalPrice + "€" +
+                "</p>" +
+
+                "<input id='alternative-name' type='text' name='Name' placeholder='Name'><br>" +
+
+                "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
+
+                "<select>" +
+                    "<option id='alternative-country' value='Deutschland'>Germany</option>\n" +
+                "</select><br>" +
+
+                "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
+
+                "<input id='alternative-postCode' type='text' name='PostCode' placeholder='Post code'><br>" +
+
+                "<input id='alternative-city' type='text' name='City' placeholder='City'><br>" +
+
+                "<button id='alternative-buy'>Buy</button>" +
+
+            "</div>"
+        );
+
+        document.getElementById('alternative-buy').onclick = function () {
+            let data = {
+                payerName: document.getElementById('alternative-name').value,
+                payerEmail: document.getElementById('alternative-email').value,
+                details: {
+                    billingAddress: {
+                        addressLine: [document.getElementById('alternative-address').value],
+                        city: document.getElementById('alternative-city').value,
+                        postalCode: document.getElementById('alternative-postCode').value,
+                        recipient: document.getElementById('alternative-name').value
+                    }
+                }
+            };
+            console.log(data);
+            registration(data)
+        }
     }
 }
 
 function getCountryId(name) {
-    let countryId;
-    let data = null;
+    return new Promise((resolve) => {
+        let data = null;
+        let countryId = null;
 
-    let xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            // console.log("Country: " , JSON.parse(this.responseText).data);
-            // let countries = JSON.parse(this.responseText).data[0].attributes.name;
+        xhr.addEventListener("readystatechange", function(){
+            if(this.readyState === 4){
+                let countries = JSON.parse(this.responseText).data;
 
-            let countries = JSON.parse(this.responseText).data;
-
-            //console.log("Länder", countries);
-
-            for(let i = 0; i < countries.length; i++){
-                if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
-                    countryId = countries[i].attributes.areaId;
+                for(let i = 0; i < countries.length; i++){
+                    if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
+                        countryId = countries[i].attributes.areaId;
+                        resolve(countryId);
+                    }
                 }
             }
-        }
+        });
+
+        xhr.open("GET", host + "/api/v1/country");
+        xhr.setRequestHeader("x-sw-context-token", contextToken);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Authorization", accessToken);
+
+        xhr.send(data);
     });
+}
 
-    xhr.open("GET", host + "/api/v1/country");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+function useConfig(obj){
+    if(configuration.titleSelector){
+        document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+    }
 
-    xhr.send(data);
+    if(configuration.descriptionSelector){
+        document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+    }
+
+    if(configuration.priceSelector){
+        document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+    }
+
+    if(configuration.imageSelector){
+        document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+    }
+
+    if(configuration.buttonSelector){
+        document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+    }
+
+    document.getElementsByTagName("BODY")[0].style.display = "block";
 }
 
 /* <trash>
