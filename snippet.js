@@ -7,8 +7,6 @@ let host;
 let ids;
 
 // Client data
-let client_id;
-let client_secret;
 let grant_type;
 
 // Token
@@ -16,41 +14,18 @@ let accessToken;
 let contextToken;
 
 init();
-connect();
 
 function init() {
     host = configuration.host;
 
-    client_id = configuration.client_id;
-    client_secret = configuration.client_secret;
+    accessToken = configuration.access_token;
     grant_type = configuration.grant_type;
 
     ids = products.slice();
-}
 
-function connect() {
-    let data = JSON.stringify({
-        "client_id": client_id,
-        "client_secret": client_secret,
-        "grant_type": grant_type
-    });
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if(this.readyState === 4) {
-            accessToken = JSON.parse(this.responseText).access_token;
-
-            for(let i = 0; i < ids.length; i++){
-                query(ids[i]);
-            }
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/oauth/token");
-    xhr.setRequestHeader("Content-Type", "application/json");
-
-    xhr.send(data);
+    for(let i = 0; i < ids.length; i++){
+        query(ids[i]);
+    }
 }
 
 function query(id) {
@@ -61,14 +36,13 @@ function query(id) {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            console.log(obj);
             useConfig(obj, id);
         }
     });
 
     xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -86,11 +60,7 @@ function createCart(id){
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    if (contextToken) {
-        xhr.setRequestHeader("x-sw-context-token", contextToken);
-    }
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -114,9 +84,9 @@ function addItemToCart(id){
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -136,9 +106,9 @@ function customerLogin(username, password){
     });
 
     xhr.open("POST", host + "/storefront-api/customer/login");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -151,15 +121,14 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            console.log("Order: ", obj);
             alert("Vielen Dank für Deine Bestellung, " + obj.data.billingAddress.lastName + "!\nDeine Ware wird an " + obj.data.billingAddress.street + " geliefert!");
         }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/order");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -218,9 +187,8 @@ function registration(customer){
     });
 
     xhr.open("POST", host + "/storefront-api/customer");
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
 }
@@ -287,7 +255,6 @@ function paymentRequest(data){
                     currency: 'EUR',
                     value: price.totalPrice
                 }
-
             }
         };
 
@@ -357,7 +324,6 @@ function paymentRequest(data){
                     }
                 }
             };
-            console.log(data);
             registration(data)
         }
     }
@@ -384,9 +350,8 @@ function getCountryId(name) {
         });
 
         xhr.open("GET", host + "/api/v1/country");
-        xhr.setRequestHeader("x-sw-context-token", contextToken);
         xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Authorization", accessToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
         xhr.send(data);
     });
