@@ -152,6 +152,7 @@ function order(){
 function registration(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
+
     /*
     let countryId;
 
@@ -159,7 +160,7 @@ function registration(customer){
         countryId = result;
 
         console.log(countryId);
-    });*/
+    }); */
 
     if(name.length > 1){
         data = JSON.stringify({
@@ -214,7 +215,7 @@ function getImageByType(data, type) {
         .filter((item) => {
             return item.type === type;
         }).map((item) => {
-            return item.attributes;
+            return item.attributes.extensions;
         })[0].links.url;
 }
 
@@ -223,13 +224,11 @@ function splitName(fullName){
 }
 
 function paymentRequest(data){
-    // lineItems mit dem Index 0, weil der Einkaufswagen nur mit einem Artikel befüllt wird
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries[0];
 
     if(window.PaymentRequest) {
-        // Die zur Verfügung stehende Bezahlmethoden
         const supportedPaymentMethods = [
             {
                 supportedMethods: 'basic-card',
@@ -280,7 +279,6 @@ function paymentRequest(data){
         // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
-            requestPayerName: true,
             requestShipping: true,
         };
 
