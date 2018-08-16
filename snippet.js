@@ -1,21 +1,32 @@
 document.getElementsByTagName("BODY")[0].style.display = "none";
 
 // Host
-let host = configuration.host;
+let host;
 
-// Product ID
-let id = configuration.uuid;
+// Product ID's
+let ids;
 
 // Client data
-let client_id = configuration.client_id;
-let client_secret = configuration.client_secret;
-let grant_type = configuration.grant_type;
+let client_id;
+let client_secret;
+let grant_type;
 
 // Token
 let accessToken;
 let contextToken;
 
+init();
 connect();
+
+function init() {
+    host = configuration.host;
+
+    client_id = configuration.client_id;
+    client_secret = configuration.client_secret;
+    grant_type = configuration.grant_type;
+
+    ids = products.slice();
+}
 
 function connect() {
     let data = JSON.stringify({
@@ -29,7 +40,10 @@ function connect() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             accessToken = JSON.parse(this.responseText).access_token;
-            query();
+
+            for(let i = 0; i < ids.length; i++){
+                query(ids[i]);
+            }
         }
     });
 
@@ -39,7 +53,7 @@ function connect() {
     xhr.send(data);
 }
 
-function query() {
+function query(id) {
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -47,18 +61,19 @@ function query() {
     xhr.addEventListener("readystatechange", function () {
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj);
+            console.log(obj);
+            useConfig(obj, id);
         }
     });
 
-    xhr.open("GET", host + "/storefront-api/product/" + id);
+    xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("Authorization", accessToken);
 
     xhr.send(data);
 }
 
-function createCart(){
+function createCart(id){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -66,7 +81,7 @@ function createCart(){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(1);
+           addItemToCart(id);
        }
     });
 
@@ -80,10 +95,10 @@ function createCart(){
     xhr.send(data);
 }
 
-function addItemToCart(quantity){
+function addItemToCart(id){
     let data = JSON.stringify({
         "type": "product",
-        "quantity": quantity,
+        "quantity": 1,
         "payload": {
             "id": id
         }
@@ -94,7 +109,7 @@ function addItemToCart(quantity){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data); // Google payment request API
+            paymentRequest(data);
         }
     });
 
@@ -276,7 +291,6 @@ function paymentRequest(data){
             }
         };
 
-        // Konfiguration der Pflichtangaben
         const options = {
             requestPayerEmail: true,
             requestShipping: true,
@@ -378,25 +392,27 @@ function getCountryId(name) {
     });
 }
 
-function useConfig(obj){
-    if(configuration.titleSelector){
-        document.getElementById(configuration.titleSelector).innerHTML = obj.data.attributes.name;
+function useConfig(obj, id){
+    if(id.titleSelector){
+        document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
     }
 
-    if(configuration.descriptionSelector){
-        document.getElementById(configuration.descriptionSelector).innerHTML = obj.data.attributes.description;
+    if(id.descriptionSelector){
+        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description;
     }
 
-    if(configuration.priceSelector){
-        document.getElementById(configuration.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+    if(id.priceSelector){
+        document.getElementById(id.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
     }
 
-    if(configuration.imageSelector){
-        document.getElementById(configuration.imageSelector).src = getImageByType(obj, 'media');
+    if(id.imageSelector){
+        document.getElementById(id.imageSelector).src = getImageByType(obj, 'media');
     }
 
-    if(configuration.buttonSelector){
-        document.getElementById(configuration.buttonSelector).addEventListener("click", createCart);
+    if(id.buttonSelector){
+        document.getElementById(id.buttonSelector).addEventListener("click", function(){
+            createCart(id.uuid);
+        });
     }
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
