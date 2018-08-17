@@ -29,9 +29,9 @@
     <session id="12151552">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="30" />
+          <entry key="project.closed" value="31" />
           <entry key="project.open.time.0" value="6" />
-          <entry key="project.open.time.1" value="6" />
+          <entry key="project.open.time.1" value="7" />
           <entry key="project.open.time.10" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.5" value="4" />
@@ -39,7 +39,7 @@
           <entry key="project.open.time.7" value="6" />
           <entry key="project.open.time.8" value="2" />
           <entry key="project.open.time.9" value="3" />
-          <entry key="project.opened" value="32" />
+          <entry key="project.opened" value="33" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -65,14 +65,14 @@
           <entry key="css" value="3149" />
           <entry key="gitignore" value="32" />
           <entry key="html" value="1270" />
-          <entry key="js" value="22443" />
+          <entry key="js" value="22501" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="CSS" value="3149" />
           <entry key="HTML" value="1282" />
-          <entry key="JavaScript" value="22431" />
+          <entry key="JavaScript" value="22489" />
           <entry key="PLAIN_TEXT" value="32" />
         </counts>
       </usages-collector>
@@ -89,8 +89,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="475">
-              <caret line="175" column="8" lean-forward="true" selection-start-line="175" selection-start-column="8" selection-end-line="175" selection-end-column="8" />
+            <state relative-caret-position="3150">
+              <caret line="175" column="8" selection-start-line="175" selection-start-column="8" selection-end-line="175" selection-end-column="8" />
               <folding>
                 <element signature="n#style#0;n#div#0;n#div#0;n#div#3;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#1;n#div#0;n#div#4;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -102,8 +102,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/snippet.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="137" column="13" selection-start-line="137" selection-start-column="13" selection-end-line="137" selection-end-column="13" />
+            <state relative-caret-position="207">
+              <caret line="331" column="1" lean-forward="true" selection-start-line="331" selection-start-column="1" selection-end-line="331" selection-end-column="1" />
             </state>
           </provider>
         </entry>
@@ -191,7 +191,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -208,13 +207,14 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="js.last.introduce.type" value="LET" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../development" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="list.type.of.created.stylesheet" value="CSS" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -273,18 +273,19 @@
       <workItem from="1534403035704" duration="1156000" />
       <workItem from="1534404359059" duration="990000" />
       <workItem from="1534426076575" duration="2793000" />
-      <workItem from="1534486563821" duration="9017000" />
+      <workItem from="1534486563821" duration="9617000" />
+      <workItem from="1534508868454" duration="336000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="297057000" />
+    <option name="totallyTimeSpent" value="297993000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="67" y="25" width="3373" height="1415" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12233243" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.122933574" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -349,8 +350,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="475">
-          <caret line="175" column="8" lean-forward="true" selection-start-line="175" selection-start-column="8" selection-end-line="175" selection-end-column="8" />
+        <state relative-caret-position="3150">
+          <caret line="175" column="8" selection-start-line="175" selection-start-column="8" selection-end-line="175" selection-end-column="8" />
           <folding>
             <element signature="n#style#0;n#div#0;n#div#0;n#div#3;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#1;n#div#0;n#div#4;n#body#0;n#html#0;n#!!top" expanded="true" />
@@ -360,8 +361,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/snippet.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="137" column="13" selection-start-line="137" selection-start-column="13" selection-end-line="137" selection-end-column="13" />
+        <state relative-caret-position="207">
+          <caret line="331" column="1" lean-forward="true" selection-start-line="331" selection-start-column="1" selection-end-line="331" selection-end-column="1" />
         </state>
       </provider>
     </entry>
