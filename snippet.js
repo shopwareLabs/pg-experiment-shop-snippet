@@ -121,7 +121,7 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            alert("Vielen Dank für Deine Bestellung, " + obj.data.billingAddress.lastName + "!\nDeine Ware wird an " + obj.data.billingAddress.street + " geliefert!");
+            alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
         }
     });
 
@@ -137,60 +137,61 @@ function registration(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
 
-    /*
-    let countryId;
+    apiAuth().then(function (result) {
+        if(result){
+            getCountryId(customer.shippingAddress.country, result).then(function (result) {
+                let countryId = result;
 
-    getCountryId("Deutschland").then(function (result) {
-        countryId = result;
+                if(name.length > 1){
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: name[0],
+                        lastName: name[name.length-1],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
 
-        console.log(countryId);
-    }); */
+                else {
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: "Without first name",
+                        lastName: name[0],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
 
-    if(name.length > 1){
-        data = JSON.stringify({
-            salutation: "Herr",
-            firstName: name[0],
-            lastName: name[name.length-1],
-            email: customer.payerEmail,
-            password: "password",
-            billingCountry: "20080911ffff4fffafffffff19830531",
-            billingZipcode: customer.details.billingAddress.postalCode,
-            billingCity: customer.details.billingAddress.city,
-            billingStreet: customer.details.billingAddress.addressLine[0]
-        });
-    }
+                let xhr = new XMLHttpRequest();
 
-    else {
-        data = JSON.stringify({
-            salutation: "Herr",
-            firstName: "Without first name",
-            lastName: name[0],
-            email: customer.payerEmail,
-            password: "password",
-            billingCountry: "20080911ffff4fffafffffff19830531",
-            billingZipcode: customer.details.billingAddress.postalCode,
-            billingCity: customer.details.billingAddress.city,
-            billingStreet: customer.details.billingAddress.addressLine[0]
-        });
-    }
+                xhr.addEventListener("readystatechange", function(){
+                    if(this.readyState === 4){
 
-    let xhr = new XMLHttpRequest();
+                        let email = JSON.parse(data).email;
+                        let password = JSON.parse(data).password;
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
+                        customerLogin(email, password);
+                    }
+                });
 
-            let email = JSON.parse(data).email;
-            let password = JSON.parse(data).password;
+                xhr.open("POST", host + "/storefront-api/customer");
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
-            customerLogin(email, password);
+                xhr.send(data);
+
+
+            });
         }
     });
-
-    xhr.open("POST", host + "/storefront-api/customer");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function getImageByType(data, type) {
@@ -221,6 +222,7 @@ function paymentRequest(data){
                 },
             }
         ];
+
         const paymentDetails = {
             displayItems: [
                 {
@@ -329,7 +331,7 @@ function paymentRequest(data){
     }
 }
 
-function getCountryId(name) {
+function getCountryId(iso, bearerToken) {
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
@@ -339,10 +341,9 @@ function getCountryId(name) {
         xhr.addEventListener("readystatechange", function(){
             if(this.readyState === 4){
                 let countries = JSON.parse(this.responseText).data;
-
                 for(let i = 0; i < countries.length; i++){
-                    if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
-                        countryId = countries[i].attributes.areaId;
+                    if(iso === countries[i].id){
+                        countryId = countries[i].id;
                         resolve(countryId);
                     }
                 }
@@ -351,6 +352,8 @@ function getCountryId(name) {
 
         xhr.open("GET", host + "/api/v1/country");
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Authorization", bearerToken);
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
         xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
         xhr.send(data);
@@ -383,190 +386,27 @@ function useConfig(obj, id){
     document.getElementsByTagName("BODY")[0].style.display = "block";
 }
 
-/* <trash>
+function apiAuth(){
+    return new Promise((resolve) => {
+        let data = JSON.stringify({
+            "client_id": "SWIAMNHRSJJKM0VPTULMN2PZAG",
+            "client_secret": "SDJYdktXYVZhTDBBWUx5dm0wZ1lzUFdDbWhDZmx2aWxsVkR1blY",
+            "grant_type": grant_type
+        });
 
-// Language
+        let xhr = new XMLHttpRequest();
 
-document.write(
-    "<select id='languages' onchange='setLanguage(this)'>" +
-        "<option id='german' value='de'>Deutsch</option>" +
-        "<option id='english' value='en'>Englisch</option>" +
-    "</select>"
-);
+        xhr.addEventListener("readystatechange", function () {
+            if(this.readyState === 4) {
+                resolve(JSON.parse(this.responseText).access_token);
+            }
+        });
 
-// Product data
-document.write(
-    "<div id='product'>"+
-        "<h2 id='productTitle'></h2>" +
-        "<p id='productDescription'></p>" +
-        "<img id='productImage'>" +
-        "<h3 id='productPrice'></h3>" +
-        "<h4 id='productStock'></h4>" +
-        "<p id='productsInCart'></p>" +
-        "<p id='total'></p>" +
-    "</div>"
-);
+        xhr.open("POST", host + "/api/oauth/token");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
-document.write(
-    "<div id='purchaseForm'>" +
-        "<button onclick='createCart()'>Jetzt kaufen</button>" +
-    "</div>"
-);
-
-document.write(
-    "<div id='billingAddress'>" +
-        "<p id='customerThank'></p>" +
-        "<p id='customerDates'></p>" +
-        "<p id='customerName'></p>" +
-        "<p id='customerStreetName'></p>" +
-        "<p id='customerAddress'></p>" +
-        "<p id='customerCountry'></p>" +
-    "</div>"
-);
-
-// Purchase form
-let down = false;
-
-let firstClick = false;
-
-function buy() {
-    if(!firstClick){
-        firstClick = true;
-    }
-    if(!down)
-    {
-        document.getElementById("showForm").style.display = "block";
-        down = true;
-
-    } else {
-        document.getElementById("showForm").style.display = "none";
-        down = false;
-    }
-}
-
-function readCart(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            let obj = JSON.parse(this.responseText);
-            //document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb: " + obj.data.lineItems.length + "";
-            //document.getElementById('total').innerHTML = "Gesamtbetrag: " + obj.data.price.totalPrice + "€";
-        }
+        xhr.send(data);
     });
-
-    xhr.open("GET", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Authorization", accessToken);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-
-    xhr.send(data);
 }
-
-function changeItemQuantity(quantity){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(this.responseText)
-        }
-    });
-
-    xhr.open("PATCH", host + "/storefront-api/checkout/cart/line-item/" + id + "/quantity/" + quantity);
-    xhr.setRequestHeader("x-sw-context-token", contextToken);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Authorization", accessToken);
-
-    xhr.send(data);
-}
-
-function getStockInfo(obj){
-    let stock = parseInt(obj.data.attributes.stock);
-    if(stock > 10){
-        document.getElementById('productStock').innerHTML = "Auf Lager!";
-    }
-    else if(stock <= 10){
-        document.getElementById('productStock').innerHTML = "Nur noch wenige auf Lager! [" + stock + "]";
-    }
-    else if(stock <= 0){
-        document.getElementById('productStock').innerHTML = "Leider nicht mehr auf Lager!";
-    }
-    else{
-        document.getElementById('productStock').innerHTML = "Leider gibt es keine weiteren Informationen über den Bestand :(";
-    }
-}
-
-function getUsername(){
-    return document.getElementById('username').value;
-}
-
-function getUserPassword(){
-    return document.getElementById('password').value;
-}
-
-function successfulOrder(response){
-    if(response.data){
-        //console.log(response);
-        //alert(response);
-        /*let billingAddress = response.data.billingAddress;
-
-        document.getElementById('customerThank').innerHTML = "Vielen Dank f&uuml;r Ihre Bestellung!";
-        document.getElementById('customerDates').innerHTML = "Ihre Daten:";
-
-        document.getElementById('customerName').innerHTML = billingAddress.salutation + " " + billingAddress.firstName + " " + billingAddress.lastName;
-        document.getElementById('customerStreetName').innerHTML = billingAddress.street;
-        document.getElementById('customerAddress').innerHTML = billingAddress.zipcode + " " + billingAddress.city;
-        document.getElementById('customerCountry').innerHTML = billingAddress.country.name;
-    }
-    else if(response.errors){
-        console.log("test");
-    }
-}
-
-function setLanguage(id){
-    let language = id.value;
-
-    if(language === "de"){
-        document.getElementById('german').innerHTML = "Deutsch";
-        document.getElementById('english').innerHTML = "Englisch";
-
-        document.getElementById('buyNow').innerHTML = "Jetzt kaufen";
-
-        document.getElementById('usernameText').innerHTML = "Benutzername:";
-        document.getElementById('passwordText').innerHTML = "Passwort:";
-
-        document.getElementById('payWith').innerHTML = "Bezahle mit:";
-        document.getElementById('paypal').innerHTML = "PayPal";
-        document.getElementById('directly').innerHTML = "Sofort";
-        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
-        document.getElementById('paymentinadvance').innerHTML = "Vorkasse";
-        document.getElementById('confirm').innerHTML = "Best&aumltigen";
-
-        document.getElementById('productsInCart').innerHTML = "Artikelanzahl im Warenkorb:";
-        document.getElementById('total').innerHTML = "Gesamtbetrag:";
-    }
-
-    else if(language === "en")
-    {
-        document.getElementById('german').innerHTML = "German";
-        document.getElementById('english').innerHTML = "English";
-
-        document.getElementById('buyNow').innerHTML = "Buy now";
-
-        document.getElementById('usernameText').innerHTML = "Username:";
-        document.getElementById('passwordText').innerHTML = "Password:";
-
-        document.getElementById('payWith').innerHTML = "Pay with:";
-        document.getElementById('paypal').innerHTML = "PayPal";
-        document.getElementById('directly').innerHTML = "Directly";
-        document.getElementById('paymentInAdvance').innerHTML = "Payment in advance";
-        document.getElementById('confirm').innerHTML = "Confirm";
-
-        document.getElementById('productsInCart').innerHTML = "Product number in the Cart:";
-        document.getElementById('total').innerHTML = "Total amount:";
-    }
-}
-</trash> */
