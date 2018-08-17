@@ -137,60 +137,61 @@ function registration(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
 
-    /*
-    let countryId;
+    apiAuth().then(function (result) {
+        if(result){
+            getCountryId(customer.shippingAddress.country, result).then(function (result) {
+                let countryId = result;
 
-    getCountryId("Deutschland").then(function (result) {
-        countryId = result;
+                if(name.length > 1){
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: name[0],
+                        lastName: name[name.length-1],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
 
-        console.log(countryId);
-    }); */
+                else {
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: "Without first name",
+                        lastName: name[0],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
 
-    if(name.length > 1){
-        data = JSON.stringify({
-            salutation: "Herr",
-            firstName: name[0],
-            lastName: name[name.length-1],
-            email: customer.payerEmail,
-            password: "password",
-            billingCountry: "20080911ffff4fffafffffff19830531",
-            billingZipcode: customer.details.billingAddress.postalCode,
-            billingCity: customer.details.billingAddress.city,
-            billingStreet: customer.details.billingAddress.addressLine[0]
-        });
-    }
+                let xhr = new XMLHttpRequest();
 
-    else {
-        data = JSON.stringify({
-            salutation: "Herr",
-            firstName: "Without first name",
-            lastName: name[0],
-            email: customer.payerEmail,
-            password: "password",
-            billingCountry: "20080911ffff4fffafffffff19830531",
-            billingZipcode: customer.details.billingAddress.postalCode,
-            billingCity: customer.details.billingAddress.city,
-            billingStreet: customer.details.billingAddress.addressLine[0]
-        });
-    }
+                xhr.addEventListener("readystatechange", function(){
+                    if(this.readyState === 4){
 
-    let xhr = new XMLHttpRequest();
+                        let email = JSON.parse(data).email;
+                        let password = JSON.parse(data).password;
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
+                        customerLogin(email, password);
+                    }
+                });
 
-            let email = JSON.parse(data).email;
-            let password = JSON.parse(data).password;
+                xhr.open("POST", host + "/storefront-api/customer");
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
-            customerLogin(email, password);
+                xhr.send(data);
+
+
+            });
         }
     });
-
-    xhr.open("POST", host + "/storefront-api/customer");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function getImageByType(data, type) {
@@ -329,7 +330,7 @@ function paymentRequest(data){
     }
 }
 
-function getCountryId(name) {
+function getCountryId(iso, bearerToken) {
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
@@ -339,10 +340,9 @@ function getCountryId(name) {
         xhr.addEventListener("readystatechange", function(){
             if(this.readyState === 4){
                 let countries = JSON.parse(this.responseText).data;
-
                 for(let i = 0; i < countries.length; i++){
-                    if(name.toLowerCase() === (countries[i].attributes.name).toLowerCase()){
-                        countryId = countries[i].attributes.areaId;
+                    if(iso === countries[i].id){
+                        countryId = countries[i].id;
                         resolve(countryId);
                     }
                 }
@@ -351,6 +351,8 @@ function getCountryId(name) {
 
         xhr.open("GET", host + "/api/v1/country");
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Authorization", bearerToken);
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
         xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
         xhr.send(data);
@@ -381,6 +383,31 @@ function useConfig(obj, id){
     }
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
+}
+
+function apiAuth(){
+    return new Promise((resolve) => {
+        let data = JSON.stringify({
+            "client_id": "SWIAMNHRSJJKM0VPTULMN2PZAG",
+            "client_secret": "SDJYdktXYVZhTDBBWUx5dm0wZ1lzUFdDbWhDZmx2aWxsVkR1blY",
+            "grant_type": grant_type
+        });
+
+        let xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("readystatechange", function () {
+            if(this.readyState === 4) {
+                resolve(JSON.parse(this.responseText).access_token);
+            }
+        });
+
+        xhr.open("POST", host + "/api/oauth/token");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+        xhr.send(data);
+    });
 }
 
 /* <trash>
