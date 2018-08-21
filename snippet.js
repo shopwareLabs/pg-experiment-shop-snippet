@@ -187,8 +187,6 @@ function registration(customer){
                 xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
                 xhr.send(data);
-
-
             });
         }
     });
@@ -342,7 +340,7 @@ function getCountryId(iso, bearerToken) {
             if(this.readyState === 4){
                 let countries = JSON.parse(this.responseText).data;
                 for(let i = 0; i < countries.length; i++){
-                    if(iso === countries[i].id){
+                    if(iso === countries[i].attributes.iso){
                         countryId = countries[i].id;
                         resolve(countryId);
                     }
