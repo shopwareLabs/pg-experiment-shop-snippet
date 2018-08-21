@@ -15,7 +15,7 @@ let contextToken;
 
 init();
 
-function init() {
+function init(){
     host = configuration.host;
 
     accessToken = configuration.access_token;
@@ -28,12 +28,12 @@ function init() {
     }
 }
 
-function query(id) {
+function query(id){
     let data = null;
 
     let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function () {
+    xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
             useConfig(obj, id);
@@ -137,9 +137,9 @@ function registration(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
 
-    apiAuth().then(function (result) {
+    apiAuth().then(function(result){
         if(result){
-            getCountryId(customer.shippingAddress.country, result).then(function (result) {
+            getCountryId(customer.shippingAddress.country, result).then(function(result){
                 let countryId = result;
 
                 if(name.length > 1){
@@ -192,7 +192,7 @@ function registration(customer){
     });
 }
 
-function getImageByType(data, type) {
+function getImageByType(data, type){
     return data.included
         .filter((item) => {
             return item.type === type;
@@ -344,7 +344,7 @@ function paymentRequest(data){
     }
 }
 
-function getCountryId(iso, bearerToken) {
+function getCountryId(iso, bearerToken){
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
@@ -409,7 +409,7 @@ function apiAuth(){
 
         let xhr = new XMLHttpRequest();
 
-        xhr.addEventListener("readystatechange", function () {
+        xhr.addEventListener("readystatechange", function(){
             if(this.readyState === 4) {
                 resolve(JSON.parse(this.responseText).access_token);
             }
