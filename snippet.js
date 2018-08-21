@@ -79,6 +79,7 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
+            console.log(data);
             paymentRequest(data);
         }
     });
@@ -121,6 +122,7 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
+            console.log("Order: ", obj);
             alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
         }
     });
@@ -207,7 +209,6 @@ function splitName(fullName){
 
 function getShippingOptions(shipping){
     let shippingOptions = [];
-    console.log(shipping);
 
     for(let i = 0; i < shipping.length; i++){
         shippingOptions.push(
@@ -226,7 +227,6 @@ function getShippingOptions(shipping){
 }
 
 function paymentRequest(data){
-    console.log(data);
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
@@ -283,7 +283,6 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
-                console.log(data);
                 registration(data);
 
                 return paymentResponse.complete();
@@ -291,7 +290,7 @@ function paymentRequest(data){
             .catch(err => console.error(err));
     } else {
         document.write(
-            "<div>" +
+            "<div id='alternative-checkout'>" +
 
                 "<p>Alternative Checkout:</p>" +
 
@@ -308,7 +307,7 @@ function paymentRequest(data){
                 "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
 
                 "<select>" +
-                    "<option id='alternative-country' value='Deutschland'>Germany</option>\n" +
+                    "<option id='alternative-country' value='DE'>Germany</option>\n" +
                 "</select><br>" +
 
                 "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
@@ -322,6 +321,11 @@ function paymentRequest(data){
             "</div>"
         );
 
+        let myElements = document.querySelector("#alternative-checkout");
+            myElements.style.border = "solid black";
+            myElements.style.textAlign = "center";
+            myElements.style.verticalAlign = "middle";
+
         document.getElementById('alternative-buy').onclick = function () {
             let data = {
                 payerName: document.getElementById('alternative-name').value,
@@ -333,9 +337,12 @@ function paymentRequest(data){
                         postalCode: document.getElementById('alternative-postCode').value,
                         recipient: document.getElementById('alternative-name').value
                     }
+                },
+                shippingAddress: {
+                    country: document.getElementById('alternative-country').value
                 }
             };
-            registration(data)
+            registration(data);
         }
     }
 }
