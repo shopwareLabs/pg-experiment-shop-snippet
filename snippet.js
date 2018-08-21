@@ -187,8 +187,6 @@ function registration(customer){
                 xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
                 xhr.send(data);
-
-
             });
         }
     });
@@ -207,10 +205,29 @@ function splitName(fullName){
     return fullName.split(" ");
 }
 
+function getShippingOptions(shipping){
+    let shippingOptions = [];
+
+    for(let i = 0; i < shipping.length; i++){
+        shippingOptions.push(
+            {
+                id: shipping[i].shippingMethod.id,
+                label: shipping[i].shippingMethod.name,
+                amount:{
+                    currency: 'EUR',
+                    value: shipping[i].shippingCosts.totalPrice
+                },
+                selected: true,
+            }
+        );
+    }
+    return shippingOptions;
+}
+
 function paymentRequest(data){
     let productName = data.lineItems[0].label;
     let price = data.price;
-    let shipping = data.deliveries[0];
+    let shipping = data.deliveries;
 
     if(window.PaymentRequest) {
         const supportedPaymentMethods = [
@@ -233,26 +250,16 @@ function paymentRequest(data){
                     }
                 },
                 {
-                    label: "MwSt",
+                    label: "VAT",
                     amount: {
                         currency: "EUR",
                         value: price.calculatedTaxes[0].tax
                     }
                 }
             ],
-            shippingOptions: [
-                {
-                    id: shipping.shippingMethod.id,
-                    label: shipping.shippingMethod.name,
-                    amount:{
-                        currency: 'EUR',
-                        value: shipping.shippingCosts.totalPrice
-                    },
-                    selected: true,
-                }
-            ],
+            shippingOptions: getShippingOptions(shipping),
             total: {
-                label: "Gesamtpreis",
+                label: "Total",
                 amount:{
                     currency: 'EUR',
                     value: price.totalPrice
@@ -274,7 +281,6 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
-                console.log(data);
                 registration(data);
 
                 return paymentResponse.complete();
@@ -282,7 +288,7 @@ function paymentRequest(data){
             .catch(err => console.error(err));
     } else {
         document.write(
-            "<div>" +
+            "<div id='alternative-checkout'>" +
 
                 "<p>Alternative Checkout:</p>" +
 
@@ -299,7 +305,7 @@ function paymentRequest(data){
                 "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
 
                 "<select>" +
-                    "<option id='alternative-country' value='Deutschland'>Germany</option>\n" +
+                    "<option id='alternative-country' value='DE'>Germany</option>\n" +
                 "</select><br>" +
 
                 "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
@@ -313,9 +319,13 @@ function paymentRequest(data){
             "</div>"
         );
 
+        let myElements = document.querySelector("#alternative-checkout");
+            myElements.style.border = "solid black";
+            myElements.style.textAlign = "center";
+            myElements.style.verticalAlign = "middle";
+
         document.getElementById('alternative-buy').onclick = function () {
             let data = {
-                payerName: document.getElementById('alternative-name').value,
                 payerEmail: document.getElementById('alternative-email').value,
                 details: {
                     billingAddress: {
@@ -324,9 +334,12 @@ function paymentRequest(data){
                         postalCode: document.getElementById('alternative-postCode').value,
                         recipient: document.getElementById('alternative-name').value
                     }
+                },
+                shippingAddress: {
+                    country: document.getElementById('alternative-country').value
                 }
             };
-            registration(data)
+            registration(data);
         }
     }
 }
@@ -342,7 +355,7 @@ function getCountryId(iso, bearerToken) {
             if(this.readyState === 4){
                 let countries = JSON.parse(this.responseText).data;
                 for(let i = 0; i < countries.length; i++){
-                    if(iso === countries[i].id){
+                    if(iso === countries[i].attributes.iso){
                         countryId = countries[i].id;
                         resolve(countryId);
                     }
