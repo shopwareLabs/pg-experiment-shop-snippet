@@ -79,7 +79,6 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            console.log(data);
             paymentRequest(data);
         }
     });
@@ -122,7 +121,6 @@ function order(){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let obj = JSON.parse(this.responseText);
-            console.log("Order: ", obj);
             alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
         }
     });
@@ -328,7 +326,6 @@ function paymentRequest(data){
 
         document.getElementById('alternative-buy').onclick = function () {
             let data = {
-                payerName: document.getElementById('alternative-name').value,
                 payerEmail: document.getElementById('alternative-email').value,
                 details: {
                     billingAddress: {
