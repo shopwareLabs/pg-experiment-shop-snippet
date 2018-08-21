@@ -205,10 +205,31 @@ function splitName(fullName){
     return fullName.split(" ");
 }
 
+function getShippingOptions(shipping){
+    let shippingOptions = [];
+    console.log(shipping);
+
+    for(let i = 0; i < shipping.length; i++){
+        shippingOptions.push(
+            {
+                id: shipping[i].shippingMethod.id,
+                label: shipping[i].shippingMethod.name,
+                amount:{
+                    currency: 'EUR',
+                    value: shipping[i].shippingCosts.totalPrice
+                },
+                selected: true,
+            }
+        );
+    }
+    return shippingOptions;
+}
+
 function paymentRequest(data){
+    console.log(data);
     let productName = data.lineItems[0].label;
     let price = data.price;
-    let shipping = data.deliveries[0];
+    let shipping = data.deliveries;
 
     if(window.PaymentRequest) {
         const supportedPaymentMethods = [
@@ -231,26 +252,16 @@ function paymentRequest(data){
                     }
                 },
                 {
-                    label: "MwSt",
+                    label: "VAT",
                     amount: {
                         currency: "EUR",
                         value: price.calculatedTaxes[0].tax
                     }
                 }
             ],
-            shippingOptions: [
-                {
-                    id: shipping.shippingMethod.id,
-                    label: shipping.shippingMethod.name,
-                    amount:{
-                        currency: 'EUR',
-                        value: shipping.shippingCosts.totalPrice
-                    },
-                    selected: true,
-                }
-            ],
+            shippingOptions: getShippingOptions(shipping),
             total: {
-                label: "Gesamtpreis",
+                label: "Total",
                 amount:{
                     currency: 'EUR',
                     value: price.totalPrice
