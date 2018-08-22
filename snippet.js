@@ -79,6 +79,7 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
+            console.log("Add item to cart: ", data);
             paymentRequest(data);
         }
     });
@@ -89,107 +90,6 @@ function addItemToCart(id){
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
-}
-
-function customerLogin(username, password){
-    let data = JSON.stringify({
-        "username": username,
-        "password": password
-    });
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            order();
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/customer/login");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
-}
-
-function order(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            let obj = JSON.parse(this.responseText);
-            alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/checkout/order");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
-}
-
-function registration(customer){
-    let name = splitName(customer.details.billingAddress.recipient);
-    let data;
-
-    apiAuth().then(function(result){
-        if(result){
-            getCountryId(customer.shippingAddress.country, result).then(function(result){
-                let countryId = result;
-
-                if(name.length > 1){
-                    data = JSON.stringify({
-                        salutation: "Herr",
-                        firstName: name[0],
-                        lastName: name[name.length-1],
-                        email: customer.payerEmail,
-                        password: "password",
-                        billingCountry: countryId,
-                        billingZipcode: customer.details.billingAddress.postalCode,
-                        billingCity: customer.details.billingAddress.city,
-                        billingStreet: customer.details.billingAddress.addressLine[0]
-                    });
-                }
-
-                else {
-                    data = JSON.stringify({
-                        salutation: "Herr",
-                        firstName: "Without first name",
-                        lastName: name[0],
-                        email: customer.payerEmail,
-                        password: "password",
-                        billingCountry: countryId,
-                        billingZipcode: customer.details.billingAddress.postalCode,
-                        billingCity: customer.details.billingAddress.city,
-                        billingStreet: customer.details.billingAddress.addressLine[0]
-                    });
-                }
-
-                let xhr = new XMLHttpRequest();
-
-                xhr.addEventListener("readystatechange", function(){
-                    if(this.readyState === 4){
-
-                        let email = JSON.parse(data).email;
-                        let password = JSON.parse(data).password;
-
-                        customerLogin(email, password);
-                    }
-                });
-
-                xhr.open("POST", host + "/storefront-api/customer");
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-                xhr.send(data);
-            });
-        }
-    });
 }
 
 function getImageByType(data, type){
@@ -228,6 +128,7 @@ function paymentRequest(data){
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
+    let token = data.token;
 
     if(window.PaymentRequest) {
         const supportedPaymentMethods = [
@@ -235,8 +136,8 @@ function paymentRequest(data){
                 supportedMethods: 'basic-card',
                 data: {
                     supportedNetworks: ["visa", "mastercard", "amex"],
-                    supportedTypes: ["debit", "credit"],
-                },
+                    supportedTypes: ["debit", "credit"]
+                }
             }
         ];
 
@@ -281,7 +182,9 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
-                registration(data);
+                console.log(data);
+                //registration(data);
+                guestOrder(data, token);
 
                 return paymentResponse.complete();
             })
@@ -402,8 +305,8 @@ function useConfig(obj, id){
 function apiAuth(){
     return new Promise((resolve) => {
         let data = JSON.stringify({
-            "client_id": "SWIAMNHRSJJKM0VPTULMN2PZAG",
-            "client_secret": "SDJYdktXYVZhTDBBWUx5dm0wZ1lzUFdDbWhDZmx2aWxsVkR1blY",
+            "client_id": "SWIAEGTMT3JQNGNZEGDRNWRLBG",
+            "client_secret": "dGhISUFFUWJPV1k4TG45MjFlcGhGNkRkQURTTWxiUzhpWGZiNWI",
             "grant_type": grant_type
         });
 
@@ -423,3 +326,160 @@ function apiAuth(){
         xhr.send(data);
     });
 }
+
+function guestOrder(customer, token){
+    console.log(token);
+    let name = splitName(customer.details.billingAddress.recipient);
+    let data;
+
+    apiAuth().then(function(result){
+        if(result){
+            getCountryId(customer.shippingAddress.country, result).then(function(result){
+                let countryId = result;
+
+                if(name.length > 1){
+                    data = JSON.stringify({
+                        firstName: name[0],
+                        lastName: name[name.length-1],
+                        email: customer.payerEmail,
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
+
+                else {
+                    data = JSON.stringify({
+                        firstName: "Without first name",
+                        lastName: name[0],
+                        email: customer.payerEmail,
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
+
+                let xhr = new XMLHttpRequest();
+
+                xhr.addEventListener("readystatechange", function(){
+                    if(this.readyState === 4){
+                        let obj = JSON.parse(this.responseText);
+                        console.log("TEST: ", obj);
+                        alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+                    }
+                });
+
+                xhr.open("POST", host + "/storefront-api/checkout/guest-order");
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+                xhr.send(data);
+            });
+        }
+    });
+}
+
+/*
+function customerLogin(username, password){
+    let data = JSON.stringify({
+        "username": username,
+        "password": password
+    });
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            order();
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/customer/login");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+    xhr.send(data);
+}
+
+function order(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            let obj = JSON.parse(this.responseText);
+            alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/checkout/order");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+    xhr.send(data);
+}
+
+function registration(customer){
+    let name = splitName(customer.details.billingAddress.recipient);
+    let data;
+
+    apiAuth().then(function(result){
+        if(result){
+            getCountryId(customer.shippingAddress.country, result).then(function(result){
+                let countryId = result;
+
+                if(name.length > 1){
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: name[0],
+                        lastName: name[name.length-1],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
+
+                else {
+                    data = JSON.stringify({
+                        salutation: "Herr",
+                        firstName: "Without first name",
+                        lastName: name[0],
+                        email: customer.payerEmail,
+                        password: "password",
+                        billingCountry: countryId,
+                        billingZipcode: customer.details.billingAddress.postalCode,
+                        billingCity: customer.details.billingAddress.city,
+                        billingStreet: customer.details.billingAddress.addressLine[0]
+                    });
+                }
+
+                let xhr = new XMLHttpRequest();
+
+                xhr.addEventListener("readystatechange", function(){
+                    if(this.readyState === 4){
+
+                        let email = JSON.parse(data).email;
+                        let password = JSON.parse(data).password;
+
+                        customerLogin(email, password);
+                    }
+                });
+
+                xhr.open("POST", host + "/storefront-api/customer");
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+                xhr.send(data);
+            });
+        }
+    });
+}
+*/
