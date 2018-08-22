@@ -79,7 +79,6 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            console.log("Add item to cart: ", data);
             paymentRequest(data);
         }
     });
@@ -128,7 +127,6 @@ function paymentRequest(data){
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
-    let token = data.token;
 
     if(window.PaymentRequest) {
         const supportedPaymentMethods = [
@@ -182,9 +180,7 @@ function paymentRequest(data){
         return paymentRequest.show()
             .then(paymentResponse => {
                 data = paymentResponse;
-                console.log(data);
-                //registration(data);
-                guestOrder(data, token);
+                guestOrder(data);
 
                 return paymentResponse.complete();
             })
@@ -242,7 +238,7 @@ function paymentRequest(data){
                     country: document.getElementById('alternative-country').value
                 }
             };
-            registration(data);
+            guestOrder(data);
         }
     }
 }
@@ -327,8 +323,7 @@ function apiAuth(){
     });
 }
 
-function guestOrder(customer, token){
-    console.log(token);
+function guestOrder(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
 
@@ -366,13 +361,13 @@ function guestOrder(customer, token){
                 xhr.addEventListener("readystatechange", function(){
                     if(this.readyState === 4){
                         let obj = JSON.parse(this.responseText);
-                        console.log("TEST: ", obj);
                         alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
                     }
                 });
 
                 xhr.open("POST", host + "/storefront-api/checkout/guest-order");
                 xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("X-SW-Context-Token", contextToken);
                 xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
                 xhr.send(data);
