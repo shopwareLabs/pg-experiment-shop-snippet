@@ -154,6 +154,7 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
+        //paypalRequest();
         document.write(
             "<div id='alternative-checkout'>" +
 
@@ -354,8 +355,8 @@ function useConfig(obj, id){
 function apiAuth(){
     return new Promise((resolve) => {
         let data = JSON.stringify({
-            "client_id": "SWIAEGTMT3JQNGNZEGDRNWRLBG",
-            "client_secret": "dGhISUFFUWJPV1k4TG45MjFlcGhGNkRkQURTTWxiUzhpWGZiNWI",
+            "client_id": "SWIAA1FRBLDWOUNYBDDPB2NJBQ",
+            "client_secret": "djJncGc3cUVReGdrdlo0VE41aDZSZ0VnVWRyc3BHcHZEQ0MzTDQ",
             "grant_type": grant_type
         });
 
@@ -374,4 +375,23 @@ function apiAuth(){
 
         xhr.send(data);
     });
+}
+
+function paypalRequest(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            console.log(this.responseText);
+        }
+    });
+
+    xhr.open("POST", host + "/storefront-api/checkout/pay");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+    xhr.send(data);
 }
