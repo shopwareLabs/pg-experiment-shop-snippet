@@ -186,6 +186,163 @@ function paymentRequest(data){
     }
 }
 
+function addAlternativeCheckout(id){
+    let parent = document.getElementById(id.buttonSelector).parentElement;
+
+    let popup = document.createElement("div");
+        popup.setAttribute("id", "popup");
+        popup.setAttribute("class", "shopware");
+        //popup.style.cssText = 'display:none';
+        popup.style.cssText =
+            'position: absolute;' +
+            'width: 400px;' +
+            'background: #fafafa;' +
+            'left: -75px;' +
+            'top: 90px;' +
+            'box-shadow: 0 0 5px 1px rgba(0,0,0,.2);' +
+            'z-index: 1000;' +
+            'padding-bottom: 40px;' +
+            'border-radius: 3px 3px 3px 3px;';
+
+    let title = document.createElement("div");
+        title.setAttribute("class", "title");
+        title.style.cssText =
+            "background: #2a3138;" +
+            "color: #fff;" +
+            "font-size: 13px;" +
+            "padding: 8px 15px;" +
+            "border-radius: 3px 3px 0 0;";
+
+    let subTitle = document.createElement("i");
+        subTitle.setAttribute("class", "fa fa-lock");
+        subTitle.appendChild(document.createTextNode("Verschlüsselter Einkauf über shopware.com"));
+
+    title.appendChild(subTitle);
+    popup.appendChild(title);
+
+    let content = document.createElement("div");
+        content.setAttribute("class", "content");
+        content.style.cssText = "padding: 10px 15px;";
+
+    let labelNames = [
+        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
+    ];
+
+    let inputIds = [
+        "alternative-first-name", "alternative-last-name",
+        "alternative-email", "alternative-address",
+        "alternative-postcode", "alternative-city"
+    ];
+
+    let types = [
+        "text", "text", "email", "text", "text", "text"
+    ];
+
+    let placeholder = [
+        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
+    ];
+
+        for(let i = 0; i < 6; i++){
+
+            let formEl = document.createElement("div");
+                formEl.setAttribute("class", "form-element");
+                formEl.style.cssText = "margin-bottom: 10px;";
+
+            let label = document.createElement("label");
+                label.appendChild(document.createTextNode(labelNames[i]));
+                label.style.cssText =
+                    "color: #999;" +
+                    "font-size: 13px;" +
+                    "margin: 0;" +
+                    "padding: 0;" +
+                    "margin-bottom: 3px;";
+
+            let input = document.createElement("input");
+                input.setAttribute("id", inputIds[i]);
+                input.setAttribute("type", types[i]);
+                input.setAttribute("class", "form-control");
+                input.setAttribute("placeholder", placeholder[i]);
+                input.style.cssText =
+                    "border-radius: 3px 3px 3px 3px;" +
+                    "width: 100%;" +
+                    "font-size: 15px;" +
+                    "padding: 5px 10px;" +
+                    "border: 1px solid #eaeaea;";
+
+            formEl.appendChild(label);
+            formEl.appendChild(input);
+            content.appendChild(formEl);
+
+        }
+
+    labelNames = [
+        "Land", "Zahlungsart"
+    ];
+
+    let selectIds = [
+        "alternative-country", "alternative-payment-method"
+    ];
+
+    let selectNames = [
+        "country", "payment"
+    ];
+
+    let optionValues = [
+        "DE", "Nachnahme"
+    ];
+
+    let optionLabels = [
+        "Deutschland", "Nachname"
+    ];
+
+        for(let i = 0; i < 2; i++){
+
+            let formEl = document.createElement("div");
+            formEl.setAttribute("class", "form-element");
+
+            let label = document.createElement("label");
+            label.appendChild(document.createTextNode(labelNames[i]));
+
+            let select = document.createElement("select");
+            select.setAttribute("id", selectIds[i]);
+            select.setAttribute("name", selectNames[i]);
+            select.style.cssText =
+                "border-radius: 3px 3px 3px 3px;" +
+                "width: 100%;" +
+                "font-size: 15px;" +
+                "background: #fff;" +
+                "border: 1px solid #eaeaea;";
+
+            let option = document.createElement("option");
+            option.setAttribute("value", optionValues[i]);
+            option.appendChild(document.createTextNode(optionLabels[i]));
+
+            formEl.appendChild(label);
+            select.appendChild(option);
+            formEl.appendChild(select);
+            content.appendChild(formEl);
+
+        }
+
+    let formAction = document.createElement("div");
+        formAction.setAttribute("class", "form-action");
+
+    let button = document.createElement("button");
+        button.setAttribute("id", "alternative-buy-button");
+        button.setAttribute("class", "btn btn-primary btn-submit");
+
+    let test =  document.createElement("i");
+        test.setAttribute("class", "fa fa-angle-right");
+
+    button.appendChild(test);
+    formAction.appendChild(button);
+    content.appendChild(formAction);
+
+    popup.appendChild(content);
+
+    parent.appendChild(popup);
+}
+
 function guestOrder(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
@@ -322,6 +479,8 @@ function useConfig(obj, id){
             createCart(id.uuid);
         });
     }
+
+    addAlternativeCheckout(id);
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
 }
