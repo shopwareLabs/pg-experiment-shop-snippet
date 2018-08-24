@@ -154,53 +154,26 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
-        //paypalRequest();
-        document.write(
-            "<div id='alternative-checkout'>" +
 
-            "<p>Alternative Checkout:</p>" +
+        if(document.getElementById("popup").style.display === "block")
+        {
+            document.getElementById("popup").style.display = "none";
+        }
 
-            "<p>" +
-            productName +
-            "</p>" +
+        else if(document.getElementById("popup").style.display === "none")
+        {
+            document.getElementById("popup").style.display = "block";
+        }
 
-            "<p>" +
-            price.totalPrice + "€" +
-            "</p>" +
-
-            "<input id='alternative-name' type='text' name='Name' placeholder='Name'><br>" +
-
-            "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
-
-            "<select>" +
-            "<option id='alternative-country' value='DE'>Germany</option>\n" +
-            "</select><br>" +
-
-            "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
-
-            "<input id='alternative-postCode' type='text' name='PostCode' placeholder='Post code'><br>" +
-
-            "<input id='alternative-city' type='text' name='City' placeholder='City'><br>" +
-
-            "<button id='alternative-buy'>Buy</button>" +
-
-            "</div>"
-        );
-
-        let myElements = document.querySelector("#alternative-checkout");
-        myElements.style.border = "solid black";
-        myElements.style.textAlign = "center";
-        myElements.style.verticalAlign = "middle";
-
-        document.getElementById('alternative-buy').onclick = function () {
+        document.getElementById('alternative-buy-button').onclick = function () {
             let data = {
                 payerEmail: document.getElementById('alternative-email').value,
                 details: {
                     billingAddress: {
                         addressLine: [document.getElementById('alternative-address').value],
                         city: document.getElementById('alternative-city').value,
-                        postalCode: document.getElementById('alternative-postCode').value,
-                        recipient: document.getElementById('alternative-name').value
+                        postalCode: document.getElementById('alternative-postcode').value,
+                        recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
                     }
                 },
                 shippingAddress: {
@@ -208,6 +181,7 @@ function paymentRequest(data){
                 }
             };
             guestOrder(data);
+            document.getElementById("popup").style.display = "none";
         }
     }
 }
@@ -355,8 +329,8 @@ function useConfig(obj, id){
 function apiAuth(){
     return new Promise((resolve) => {
         let data = JSON.stringify({
-            "client_id": "SWIAA1FRBLDWOUNYBDDPB2NJBQ",
-            "client_secret": "djJncGc3cUVReGdrdlo0VE41aDZSZ0VnVWRyc3BHcHZEQ0MzTDQ",
+            "client_id": "SWIANUFOY2VKSJDRCEL5Z2TIVW",
+            "client_secret": "NWV2Y0hIUmc4ckRpTlFLMkRIQ005bXNUdlQ2VmZSMjg5YVhoNTY",
             "grant_type": grant_type
         });
 
@@ -375,23 +349,4 @@ function apiAuth(){
 
         xhr.send(data);
     });
-}
-
-function paypalRequest(){
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            console.log(this.responseText);
-        }
-    });
-
-    xhr.open("POST", host + "/storefront-api/checkout/pay");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }

@@ -84,7 +84,7 @@
                         <span><i class="fa fa-lock"></i> Sicher einkaufen über shopware.com</span>
                     </a>
 
-                    <div class="shopware-popup">
+                    <div id="popup" class="shopware-popup" style="display: none">
 
                         <div class="title">
                             <i class="fa fa-lock"></i> Verschlüsselter Einkauf über shopware.com
@@ -94,41 +94,50 @@
 
                             <div class="form-element">
                                 <label>Vorname</label>
-                                <input type="text" class="form-control" placeholder="Vorname">
+                                <input id="alternative-first-name" type="text" class="form-control" placeholder="Vorname">
                             </div>
 
                             <div class="form-element">
                                 <label>Nachname</label>
-                                <input type="text" class="form-control" placeholder="Nachname">
+                                <input id="alternative-last-name" type="text" class="form-control" placeholder="Nachname">
+                            </div>
+
+                            <div class="form-element">
+                                <label>E-Mail</label>
+                                <input id="alternative-email" type="email" class="form-control" placeholder="E-Mail">
                             </div>
 
                             <div class="form-element">
                                 <label>Straße</label>
-                                <input type="text" class="form-control" placeholder="Straße">
+                                <input id="alternative-address" type="text" class="form-control" placeholder="Straße">
                             </div>
 
                             <div class="form-element">
                                 <label>Postleitzahl</label>
-                                <input type="text" class="form-control" placeholder="Postleitzahl">
+                                <input id="alternative-postcode" type="text" class="form-control" placeholder="Postleitzahl">
                             </div>
 
                             <div class="form-element">
                                 <label>Ort</label>
-                                <input type="text" class="form-control" placeholder="Ort">
+                                <input id="alternative-city" type="text" class="form-control" placeholder="Ort">
+                            </div>
+
+                            <div class="form-element">
+                                <label>Land</label>
+                                <select id="alternative-country" name="country">
+                                    <option value="DE" selected>Deutschland</option>
+                                </select>
                             </div>
 
                             <div class="form-element">
                                 <label>Zahlungsart</label>
                                 <select name="payment">
-                                    <option selected>PayPal</option>
-                                    <option selected>Klarna Sofort Überweisung</option>
-                                    <option selected>Kreditkarte</option>
-                                    <option selected>Vorkasse</option>
+                                    <option id="alternative-cash-on-delivery" selected>Nachnahme</option>
                                 </select>
                             </div>
 
                             <div class="form-action">
-                                <button class="btn btn-primary btn-submit">
+                                <button id="alternative-buy-button" class="btn btn-primary btn-submit">
                                     <i class="fa fa-angle-right"></i> Jetzt kostenpflichtig bestellen
                                 </button>
                             </div>
@@ -176,14 +185,14 @@
 <script>
     let configuration = {
         host: 'http://localhost:8000',
-        access_token: 'SWSCMMFQMHBFEDL1VZVWS05QCG',
+        access_token: 'SWSCZ1QYY3B1WXA4QWK5ANFWVG',
         grant_type: 'client_credentials'
     };
 
     let products = [
 
          {
-            uuid: '013d90622ff349cba60e8154870a5a01',
+            uuid: '00174c0f96e6490c9d802ad70cc7e943',
             priceSelector: 'test-price',
             titleSelector: 'test-title',
             descriptionSelector: 'test-description',
@@ -192,7 +201,7 @@
         },
 
         {
-            uuid: '0000db1a5c59490fbdd1621e566ef275',
+            uuid: '00174c0f96e6490c9d802ad70cc7e943',
             priceSelector: 'test-price2',
             titleSelector: 'test-title2',
             descriptionSelector: 'test-description2',
