@@ -3,11 +3,11 @@ document.getElementsByTagName("BODY")[0].style.display = "none";
 // Host
 let host;
 
-// Product ID's
-let ids;
-
 // Client data
 let grant_type;
+
+// All product IDs
+let ids;
 
 // Token
 let accessToken;
@@ -22,7 +22,9 @@ function init(){
     grant_type = configuration.grant_type;
 
     ids = products.slice();
+
     let counter = 0;
+
     for(let i = 0; i < ids.length; i++){
         query(ids[i], counter);
         counter++;
@@ -155,17 +157,7 @@ function paymentRequest(data, counter){
             })
             .catch(err => console.error(err));
     } else {
-
-        if(document.getElementById("popup" + counter).style.display === "block")
-        {
-            document.getElementById("popup" + counter).style.display = "none";
-        }
-
-        else if(document.getElementById("popup" + counter).style.display === "none")
-        {
-            document.getElementById("popup" + counter).style.display = "block";
-        }
-
+        hideTheOther(counter);
         document.getElementById('alternative-buy-button' + counter).onclick = function () {
             let data = {
                 payerEmail: document.getElementById('alternative-email' + counter).value,
@@ -187,13 +179,34 @@ function paymentRequest(data, counter){
     }
 }
 
+function hideTheOther(counter) {
+    let counterEl, nonCounterEl;
+
+    if(document.getElementById("popup" + counter).style.display === "block") {
+        counterEl = "none";
+        nonCounterEl = "none";
+    }
+    else {
+        counterEl = "block";
+        nonCounterEl = "none";
+    }
+
+    for(let i = 0; i < ids.length; i++) {
+        if(i !== counter) {
+            document.getElementById("popup" + i).style.display = nonCounterEl;
+        }
+        else {
+            document.getElementById("popup" + i).style.display = counterEl;
+        }
+    }
+}
+
 function addAlternativeCheckout(id, counter){
-    console.log(counter);
     let buyButton = document.getElementById(id.buttonSelector);
 
     let popup = document.createElement("div");
         popup.setAttribute("id", "popup" + counter);
-        popup.setAttribute("class", "shopware");
+        popup.setAttribute("class", "shopware-popup");
 
     let title = document.createElement("div");
         title.setAttribute("class", "title");
@@ -412,6 +425,7 @@ function guestOrder(customer){
                     if(this.readyState === 4){
                         let obj = JSON.parse(this.responseText);
                         alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+                        init();
                     }
                 });
 
