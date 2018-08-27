@@ -157,9 +157,7 @@ function paymentRequest(data, counter){
             })
             .catch(err => console.error(err));
     } else {
-
         hideTheOther(counter);
-
         document.getElementById('alternative-buy-button' + counter).onclick = function () {
             let data = {
                 payerEmail: document.getElementById('alternative-email' + counter).value,
@@ -427,6 +425,7 @@ function guestOrder(customer){
                     if(this.readyState === 4){
                         let obj = JSON.parse(this.responseText);
                         alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+                        init();
                     }
                 });
 
