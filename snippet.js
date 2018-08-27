@@ -3,9 +3,6 @@ document.getElementsByTagName("BODY")[0].style.display = "none";
 // Host
 let host;
 
-// Product ID's
-let ids;
-
 // Client data
 let grant_type;
 
@@ -21,8 +18,10 @@ function init(){
     accessToken = configuration.access_token;
     grant_type = configuration.grant_type;
 
-    ids = products.slice();
+    let ids = products.slice();
+
     let counter = 0;
+
     for(let i = 0; i < ids.length; i++){
         query(ids[i], counter);
         counter++;
@@ -188,7 +187,6 @@ function paymentRequest(data, counter){
 }
 
 function addAlternativeCheckout(id, counter){
-    console.log(counter);
     let buyButton = document.getElementById(id.buttonSelector);
 
     let popup = document.createElement("div");
