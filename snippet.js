@@ -22,13 +22,14 @@ function init(){
     grant_type = configuration.grant_type;
 
     ids = products.slice();
-
+    let counter = 0;
     for(let i = 0; i < ids.length; i++){
-        query(ids[i]);
+        query(ids[i], counter);
+        counter++;
     }
 }
 
-function query(id){
+function query(id, counter){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -36,7 +37,7 @@ function query(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj, id);
+            useConfig(obj, id, counter);
         }
     });
 
@@ -47,7 +48,7 @@ function query(id){
     xhr.send(data);
 }
 
-function createCart(id){
+function createCart(id, counter){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -55,7 +56,7 @@ function createCart(id){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(id);
+           addItemToCart(id, counter);
        }
     });
 
@@ -65,7 +66,7 @@ function createCart(id){
     xhr.send(data);
 }
 
-function addItemToCart(id){
+function addItemToCart(id, counter){
     let data = JSON.stringify({
         "type": "product",
         "quantity": 1,
@@ -79,7 +80,7 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data);
+            paymentRequest(data, counter);
         }
     });
 
@@ -91,7 +92,7 @@ function addItemToCart(id){
     xhr.send(data);
 }
 
-function paymentRequest(data){
+function paymentRequest(data, counter){
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
@@ -155,42 +156,43 @@ function paymentRequest(data){
             .catch(err => console.error(err));
     } else {
 
-        if(document.getElementById("popup").style.display === "block")
+        if(document.getElementById("popup" + counter).style.display === "block")
         {
-            document.getElementById("popup").style.display = "none";
+            document.getElementById("popup" + counter).style.display = "none";
         }
 
-        else if(document.getElementById("popup").style.display === "none")
+        else if(document.getElementById("popup" + counter).style.display === "none")
         {
-            document.getElementById("popup").style.display = "block";
+            document.getElementById("popup" + counter).style.display = "block";
         }
 
-        document.getElementById('alternative-buy-button').onclick = function () {
+        document.getElementById('alternative-buy-button' + counter).onclick = function () {
             let data = {
-                payerEmail: document.getElementById('alternative-email').value,
+                payerEmail: document.getElementById('alternative-email' + counter).value,
                 details: {
                     billingAddress: {
-                        addressLine: [document.getElementById('alternative-address').value],
-                        city: document.getElementById('alternative-city').value,
-                        postalCode: document.getElementById('alternative-postcode').value,
-                        recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
+                        addressLine: [document.getElementById('alternative-address' + counter).value],
+                        city: document.getElementById('alternative-city' + counter).value,
+                        postalCode: document.getElementById('alternative-postcode' + counter).value,
+                        recipient: document.getElementById('alternative-first-name' + counter).value + " " + document.getElementById('alternative-last-name' + counter).value
                     }
                 },
                 shippingAddress: {
-                    country: document.getElementById('alternative-country').value
+                    country: document.getElementById('alternative-country' + counter).value
                 }
             };
             guestOrder(data);
-            document.getElementById("popup").style.display = "none";
+            document.getElementById("popup" + counter).style.display = "none";
         }
     }
 }
 
-function addAlternativeCheckout(id){
+function addAlternativeCheckout(id, counter){
+    console.log(counter);
     let buyButton = document.getElementById(id.buttonSelector);
 
     let popup = document.createElement("div");
-        popup.setAttribute("id", "popup");
+        popup.setAttribute("id", "popup" + counter);
         popup.setAttribute("class", "shopware");
 
     let title = document.createElement("div");
@@ -246,7 +248,7 @@ function addAlternativeCheckout(id){
         "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
     ];
 
-        for(let i = 0; i < 6; i++){
+        for(let i = 0; i < inputIds.length; i++){
 
             let formEl = document.createElement("div");
                 formEl.setAttribute("class", "form-element");
@@ -262,7 +264,7 @@ function addAlternativeCheckout(id){
                     "margin-bottom: 3px;";
 
             let input = document.createElement("input");
-                input.setAttribute("id", inputIds[i]);
+                input.setAttribute("id", inputIds[i] + counter);
                 input.setAttribute("type", types[i]);
                 input.setAttribute("class", "form-control");
                 input.setAttribute("placeholder", placeholder[i]);
@@ -299,7 +301,7 @@ function addAlternativeCheckout(id){
         "Deutschland", "Nachnahme"
     ];
 
-        for(let i = 0; i < 2; i++){
+        for(let i = 0; i < selectIds.length; i++){
 
             let formEl = document.createElement("div");
             formEl.setAttribute("class", "form-element");
@@ -314,7 +316,7 @@ function addAlternativeCheckout(id){
                 "margin-bottom: 3px;";
 
             let select = document.createElement("select");
-            select.setAttribute("id", selectIds[i]);
+            select.setAttribute("id", selectIds[i] + counter);
             select.setAttribute("name", selectNames[i]);
             select.style.cssText =
                 "border-radius: 3px 3px 3px 3px;" +
@@ -338,7 +340,7 @@ function addAlternativeCheckout(id){
         formAction.setAttribute("class", "form-action");
 
     let button = document.createElement("button");
-        button.setAttribute("id", "alternative-buy-button");
+        button.setAttribute("id", "alternative-buy-button" + counter);
         button.setAttribute("class", "btn btn-primary btn-submit");
         button.style.cssText =
             "width: 100%;" +
@@ -485,7 +487,7 @@ function getCountryId(iso, bearerToken){
     });
 }
 
-function useConfig(obj, id){
+function useConfig(obj, id, counter){
     if(id.titleSelector){
         document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
     }
@@ -504,11 +506,11 @@ function useConfig(obj, id){
 
     if(id.buttonSelector){
         document.getElementById(id.buttonSelector).addEventListener("click", function(){
-            createCart(id.uuid);
+            createCart(id.uuid, counter);
         });
     }
 
-    addAlternativeCheckout(id);
+    addAlternativeCheckout(id, counter);
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
 }
