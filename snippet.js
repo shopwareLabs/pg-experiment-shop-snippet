@@ -306,6 +306,12 @@ function addAlternativeCheckout(id){
 
             let label = document.createElement("label");
             label.appendChild(document.createTextNode(labelNames[i]));
+            label.style.cssText =
+                "color: #999;" +
+                "font-size: 13px;" +
+                "margin: 0;" +
+                "padding: 0;" +
+                "margin-bottom: 3px;";
 
             let select = document.createElement("select");
             select.setAttribute("id", selectIds[i]);
