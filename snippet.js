@@ -187,22 +187,11 @@ function paymentRequest(data){
 }
 
 function addAlternativeCheckout(id){
-    let parent = document.getElementById(id.buttonSelector).parentElement;
+    let buyButton = document.getElementById(id.buttonSelector);
 
     let popup = document.createElement("div");
         popup.setAttribute("id", "popup");
         popup.setAttribute("class", "shopware");
-        //popup.style.cssText = 'display:none';
-        popup.style.cssText =
-            'position: absolute;' +
-            'width: 400px;' +
-            'background: #fafafa;' +
-            'left: -75px;' +
-            'top: 90px;' +
-            'box-shadow: 0 0 5px 1px rgba(0,0,0,.2);' +
-            'z-index: 1000;' +
-            'padding-bottom: 40px;' +
-            'border-radius: 3px 3px 3px 3px;';
 
     let title = document.createElement("div");
         title.setAttribute("class", "title");
@@ -219,6 +208,18 @@ function addAlternativeCheckout(id){
 
     title.appendChild(subTitle);
     popup.appendChild(title);
+
+    popup.style.cssText =
+        'position: absolute;' +
+        'width: 400px;' +
+        'background: #fafafa;' +
+        'left: -75px;' +
+        'top: 90px;' +
+        'box-shadow: 0 0 5px 1px rgba(0,0,0,.2);' +
+        'z-index: 1000;' +
+        'padding-bottom: 40px;' +
+        'border-radius: 3px 3px 3px 3px;' +
+        'display: none';
 
     let content = document.createElement("div");
         content.setAttribute("class", "content");
@@ -292,7 +293,7 @@ function addAlternativeCheckout(id){
     ];
 
     let optionLabels = [
-        "Deutschland", "Nachname"
+        "Deutschland", "Nachnahme"
     ];
 
         for(let i = 0; i < 2; i++){
@@ -331,16 +332,21 @@ function addAlternativeCheckout(id){
         button.setAttribute("id", "alternative-buy-button");
         button.setAttribute("class", "btn btn-primary btn-submit");
 
-    let test =  document.createElement("i");
-        test.setAttribute("class", "fa fa-angle-right");
+    let label =  document.createElement("i");
+        label.setAttribute("class", "fa fa-angle-right");
+        label.appendChild(document.createTextNode("Jetzt kostenpflichtig bestellen"));
 
-    button.appendChild(test);
+    button.appendChild(label);
     formAction.appendChild(button);
     content.appendChild(formAction);
 
     popup.appendChild(content);
 
-    parent.appendChild(popup);
+    insertAfter(popup, buyButton);
+}
+
+function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
 function guestOrder(customer){
