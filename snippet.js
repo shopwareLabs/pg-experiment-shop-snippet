@@ -204,7 +204,10 @@ function addAlternativeCheckout(id){
 
     let subTitle = document.createElement("i");
         subTitle.setAttribute("class", "fa fa-lock");
-        subTitle.appendChild(document.createTextNode("Verschlüsselter Einkauf über shopware.com"));
+        subTitle.appendChild(document.createTextNode(" Verschlüsselter Einkauf über shopware.com"));
+        subTitle.style.cssText =
+            "margin-right: 5px;" +
+            "color: #00c600;";
 
     title.appendChild(subTitle);
     popup.appendChild(title);
@@ -331,10 +334,23 @@ function addAlternativeCheckout(id){
     let button = document.createElement("button");
         button.setAttribute("id", "alternative-buy-button");
         button.setAttribute("class", "btn btn-primary btn-submit");
+        button.style.cssText =
+            "width: 100%;" +
+            "background: #4496e0;" +
+            "border: 0 none;" +
+            "border-radius: 0 0 0 0;" +
+            "text-shadow: none;" +
+            "font-size: 14px;" +
+            "position: absolute;" +
+            "left: 0;" +
+            "bottom: 0;" +
+            "right: 0;" +
+            "padding: 10px 0;" +
+            "border-radius: 0 0 3px 3px;";
 
     let label =  document.createElement("i");
         label.setAttribute("class", "fa fa-angle-right");
-        label.appendChild(document.createTextNode("Jetzt kostenpflichtig bestellen"));
+        label.appendChild(document.createTextNode(" Jetzt kostenpflichtig bestellen"));
 
     button.appendChild(label);
     formAction.appendChild(button);
