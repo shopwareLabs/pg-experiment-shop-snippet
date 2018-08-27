@@ -22,13 +22,14 @@ function init(){
     grant_type = configuration.grant_type;
 
     ids = products.slice();
-
+    let counter = 0;
     for(let i = 0; i < ids.length; i++){
-        query(ids[i]);
+        query(ids[i], counter);
+        counter++;
     }
 }
 
-function query(id){
+function query(id, counter){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -36,7 +37,7 @@ function query(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj, id);
+            useConfig(obj, id, counter);
         }
     });
 
@@ -47,7 +48,7 @@ function query(id){
     xhr.send(data);
 }
 
-function createCart(id){
+function createCart(id, counter){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -55,7 +56,7 @@ function createCart(id){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(id);
+           addItemToCart(id, counter);
        }
     });
 
@@ -65,7 +66,7 @@ function createCart(id){
     xhr.send(data);
 }
 
-function addItemToCart(id){
+function addItemToCart(id, counter){
     let data = JSON.stringify({
         "type": "product",
         "quantity": 1,
@@ -79,7 +80,7 @@ function addItemToCart(id){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data);
+            paymentRequest(data, counter);
         }
     });
 
@@ -91,7 +92,7 @@ function addItemToCart(id){
     xhr.send(data);
 }
 
-function paymentRequest(data){
+function paymentRequest(data, counter){
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
@@ -154,61 +155,222 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
-        document.write(
-            "<div id='alternative-checkout'>" +
 
-            "<p>Alternative Checkout:</p>" +
+        if(document.getElementById("popup" + counter).style.display === "block")
+        {
+            document.getElementById("popup" + counter).style.display = "none";
+        }
 
-            "<p>" +
-            productName +
-            "</p>" +
+        else if(document.getElementById("popup" + counter).style.display === "none")
+        {
+            document.getElementById("popup" + counter).style.display = "block";
+        }
 
-            "<p>" +
-            price.totalPrice + "€" +
-            "</p>" +
-
-            "<input id='alternative-name' type='text' name='Name' placeholder='Name'><br>" +
-
-            "<input id='alternative-email' type='email' name='Email' placeholder='Email'><br>" +
-
-            "<select>" +
-            "<option id='alternative-country' value='DE'>Germany</option>\n" +
-            "</select><br>" +
-
-            "<input id='alternative-address' type='text' name='Address' placeholder='Address'><br>" +
-
-            "<input id='alternative-postCode' type='text' name='PostCode' placeholder='Post code'><br>" +
-
-            "<input id='alternative-city' type='text' name='City' placeholder='City'><br>" +
-
-            "<button id='alternative-buy'>Buy</button>" +
-
-            "</div>"
-        );
-
-        let myElements = document.querySelector("#alternative-checkout");
-        myElements.style.border = "solid black";
-        myElements.style.textAlign = "center";
-        myElements.style.verticalAlign = "middle";
-
-        document.getElementById('alternative-buy').onclick = function () {
+        document.getElementById('alternative-buy-button' + counter).onclick = function () {
             let data = {
-                payerEmail: document.getElementById('alternative-email').value,
+                payerEmail: document.getElementById('alternative-email' + counter).value,
                 details: {
                     billingAddress: {
-                        addressLine: [document.getElementById('alternative-address').value],
-                        city: document.getElementById('alternative-city').value,
-                        postalCode: document.getElementById('alternative-postCode').value,
-                        recipient: document.getElementById('alternative-name').value
+                        addressLine: [document.getElementById('alternative-address' + counter).value],
+                        city: document.getElementById('alternative-city' + counter).value,
+                        postalCode: document.getElementById('alternative-postcode' + counter).value,
+                        recipient: document.getElementById('alternative-first-name' + counter).value + " " + document.getElementById('alternative-last-name' + counter).value
                     }
                 },
                 shippingAddress: {
-                    country: document.getElementById('alternative-country').value
+                    country: document.getElementById('alternative-country' + counter).value
                 }
             };
             guestOrder(data);
+            document.getElementById("popup" + counter).style.display = "none";
         }
     }
+}
+
+function addAlternativeCheckout(id, counter){
+    console.log(counter);
+    let buyButton = document.getElementById(id.buttonSelector);
+
+    let popup = document.createElement("div");
+        popup.setAttribute("id", "popup" + counter);
+        popup.setAttribute("class", "shopware");
+
+    let title = document.createElement("div");
+        title.setAttribute("class", "title");
+        title.style.cssText =
+            "background: #2a3138;" +
+            "color: #fff;" +
+            "font-size: 13px;" +
+            "padding: 8px 15px;" +
+            "border-radius: 3px 3px 0 0;";
+
+    let subTitle = document.createElement("i");
+        subTitle.setAttribute("class", "fa fa-lock");
+        subTitle.appendChild(document.createTextNode(" Verschlüsselter Einkauf über shopware.com"));
+        subTitle.style.cssText =
+            "margin-right: 5px;" +
+            "color: #00c600;";
+
+    title.appendChild(subTitle);
+    popup.appendChild(title);
+
+    popup.style.cssText =
+        'position: absolute;' +
+        'width: 400px;' +
+        'background: #fafafa;' +
+        'left: -75px;' +
+        'top: 90px;' +
+        'box-shadow: 0 0 5px 1px rgba(0,0,0,.2);' +
+        'z-index: 1000;' +
+        'padding-bottom: 40px;' +
+        'border-radius: 3px 3px 3px 3px;' +
+        'display: none';
+
+    let content = document.createElement("div");
+        content.setAttribute("class", "content");
+        content.style.cssText = "padding: 10px 15px;";
+
+    let labelNames = [
+        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
+    ];
+
+    let inputIds = [
+        "alternative-first-name", "alternative-last-name",
+        "alternative-email", "alternative-address",
+        "alternative-postcode", "alternative-city"
+    ];
+
+    let types = [
+        "text", "text", "email", "text", "text", "text"
+    ];
+
+    let placeholder = [
+        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
+    ];
+
+        for(let i = 0; i < inputIds.length; i++){
+
+            let formEl = document.createElement("div");
+                formEl.setAttribute("class", "form-element");
+                formEl.style.cssText = "margin-bottom: 10px;";
+
+            let label = document.createElement("label");
+                label.appendChild(document.createTextNode(labelNames[i]));
+                label.style.cssText =
+                    "color: #999;" +
+                    "font-size: 13px;" +
+                    "margin: 0;" +
+                    "padding: 0;" +
+                    "margin-bottom: 3px;";
+
+            let input = document.createElement("input");
+                input.setAttribute("id", inputIds[i] + counter);
+                input.setAttribute("type", types[i]);
+                input.setAttribute("class", "form-control");
+                input.setAttribute("placeholder", placeholder[i]);
+                input.style.cssText =
+                    "border-radius: 3px 3px 3px 3px;" +
+                    "width: 100%;" +
+                    "font-size: 15px;" +
+                    "padding: 5px 10px;" +
+                    "border: 1px solid #eaeaea;";
+
+            formEl.appendChild(label);
+            formEl.appendChild(input);
+            content.appendChild(formEl);
+
+        }
+
+    labelNames = [
+        "Land", "Zahlungsart"
+    ];
+
+    let selectIds = [
+        "alternative-country", "alternative-payment-method"
+    ];
+
+    let selectNames = [
+        "country", "payment"
+    ];
+
+    let optionValues = [
+        "DE", "Nachnahme"
+    ];
+
+    let optionLabels = [
+        "Deutschland", "Nachnahme"
+    ];
+
+        for(let i = 0; i < selectIds.length; i++){
+
+            let formEl = document.createElement("div");
+            formEl.setAttribute("class", "form-element");
+
+            let label = document.createElement("label");
+            label.appendChild(document.createTextNode(labelNames[i]));
+            label.style.cssText =
+                "color: #999;" +
+                "font-size: 13px;" +
+                "margin: 0;" +
+                "padding: 0;" +
+                "margin-bottom: 3px;";
+
+            let select = document.createElement("select");
+            select.setAttribute("id", selectIds[i] + counter);
+            select.setAttribute("name", selectNames[i]);
+            select.style.cssText =
+                "border-radius: 3px 3px 3px 3px;" +
+                "width: 100%;" +
+                "font-size: 15px;" +
+                "background: #fff;" +
+                "border: 1px solid #eaeaea;";
+
+            let option = document.createElement("option");
+            option.setAttribute("value", optionValues[i]);
+            option.appendChild(document.createTextNode(optionLabels[i]));
+
+            formEl.appendChild(label);
+            select.appendChild(option);
+            formEl.appendChild(select);
+            content.appendChild(formEl);
+
+        }
+
+    let formAction = document.createElement("div");
+        formAction.setAttribute("class", "form-action");
+
+    let button = document.createElement("button");
+        button.setAttribute("id", "alternative-buy-button" + counter);
+        button.setAttribute("class", "btn btn-primary btn-submit");
+        button.style.cssText =
+            "width: 100%;" +
+            "background: #4496e0;" +
+            "border: 0 none;" +
+            "border-radius: 0 0 0 0;" +
+            "text-shadow: none;" +
+            "font-size: 14px;" +
+            "position: absolute;" +
+            "left: 0;" +
+            "bottom: 0;" +
+            "right: 0;" +
+            "padding: 10px 0;" +
+            "border-radius: 0 0 3px 3px;";
+
+    let label =  document.createElement("i");
+        label.setAttribute("class", "fa fa-angle-right");
+        label.appendChild(document.createTextNode(" Jetzt kostenpflichtig bestellen"));
+
+    button.appendChild(label);
+    formAction.appendChild(button);
+    content.appendChild(formAction);
+
+    popup.appendChild(content);
+
+    insertAfter(popup, buyButton);
+}
+
+function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
 function guestOrder(customer){
@@ -325,7 +487,7 @@ function getCountryId(iso, bearerToken){
     });
 }
 
-function useConfig(obj, id){
+function useConfig(obj, id, counter){
     if(id.titleSelector){
         document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
     }
@@ -344,9 +506,11 @@ function useConfig(obj, id){
 
     if(id.buttonSelector){
         document.getElementById(id.buttonSelector).addEventListener("click", function(){
-            createCart(id.uuid);
+            createCart(id.uuid, counter);
         });
     }
+
+    addAlternativeCheckout(id, counter);
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
 }
@@ -354,8 +518,8 @@ function useConfig(obj, id){
 function apiAuth(){
     return new Promise((resolve) => {
         let data = JSON.stringify({
-            "client_id": "SWIAEGTMT3JQNGNZEGDRNWRLBG",
-            "client_secret": "dGhISUFFUWJPV1k4TG45MjFlcGhGNkRkQURTTWxiUzhpWGZiNWI",
+            "client_id": "SWIANUFOY2VKSJDRCEL5Z2TIVW",
+            "client_secret": "NWV2Y0hIUmc4ckRpTlFLMkRIQ005bXNUdlQ2VmZSMjg5YVhoNTY",
             "grant_type": grant_type
         });
 
