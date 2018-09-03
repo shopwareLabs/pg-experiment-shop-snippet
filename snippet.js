@@ -19,15 +19,12 @@ function init(){
 
     ids = products.slice();
 
-    let counter = 0;
-
     for(let i = 0; i < ids.length; i++){
-        query(ids[i], counter);
-        counter++;
+        query(ids[i]);
     }
 }
 
-function query(id, counter){
+function query(id){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -35,7 +32,7 @@ function query(id, counter){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj, id, counter);
+            useConfig(obj, id);
         }
     });
 
@@ -46,7 +43,7 @@ function query(id, counter){
     xhr.send(data);
 }
 
-function createCart(id, counter){
+function createCart(id){
     let data = null;
 
     let xhr = new XMLHttpRequest();
@@ -54,7 +51,7 @@ function createCart(id, counter){
     xhr.addEventListener("readystatechange", function(){
        if(this.readyState === 4){
            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(id, counter);
+           addItemToCart(id);
        }
     });
 
@@ -64,7 +61,7 @@ function createCart(id, counter){
     xhr.send(data);
 }
 
-function addItemToCart(id, counter){
+function addItemToCart(id){
     let data = JSON.stringify({
         "type": "product",
         "quantity": 1,
@@ -78,7 +75,7 @@ function addItemToCart(id, counter){
     xhr.addEventListener("readystatechange", function(){
         if(this.readyState === 4){
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data, counter);
+            paymentRequest(data);
         }
     });
 
@@ -90,7 +87,7 @@ function addItemToCart(id, counter){
     xhr.send(data);
 }
 
-function paymentRequest(data, counter){
+function paymentRequest(data){
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
@@ -153,239 +150,25 @@ function paymentRequest(data, counter){
             })
             .catch(err => console.error(err));
     } else {
-        hideTheOther(counter);
-        document.getElementById('alternative-buy-button' + counter).onclick = function () {
+        document.getElementById('alternative-buy-button').onclick = function () {
             let data = {
-                payerEmail: document.getElementById('alternative-email' + counter).value,
+                payerEmail: document.getElementById('alternative-email').value,
                 details: {
                     billingAddress: {
-                        addressLine: [document.getElementById('alternative-address' + counter).value],
-                        city: document.getElementById('alternative-city' + counter).value,
-                        postalCode: document.getElementById('alternative-postcode' + counter).value,
-                        recipient: document.getElementById('alternative-first-name' + counter).value + " " + document.getElementById('alternative-last-name' + counter).value
+                        addressLine: [document.getElementById('alternative-address').value],
+                        city: document.getElementById('alternative-city').value,
+                        postalCode: document.getElementById('alternative-postcode').value,
+                        recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
                     }
                 },
                 shippingAddress: {
-                    country: document.getElementById('alternative-country' + counter).value
+                    country: document.getElementById('alternative-country').value
                 }
             };
             guestOrder(data);
-            document.getElementById("popup" + counter).style.display = "none";
+            document.getElementById("popup").style.display = "none";
         }
     }
-}
-
-function hideTheOther(counter) {
-    let counterEl, nonCounterEl;
-
-    if(document.getElementById("popup" + counter).style.display === "block") {
-        counterEl = "none";
-        nonCounterEl = "none";
-    }
-    else {
-        counterEl = "block";
-        nonCounterEl = "none";
-    }
-
-    for(let i = 0; i < ids.length; i++) {
-        if(i !== counter) {
-            document.getElementById("popup" + i).style.display = nonCounterEl;
-        }
-        else {
-            document.getElementById("popup" + i).style.display = counterEl;
-        }
-    }
-}
-
-function addAlternativeCheckout(id, counter){
-    let buyButton = document.getElementById(id.buttonSelector);
-    /*
-    let popup = document.createElement("div");
-        popup.setAttribute("id", "popup" + counter);
-        popup.setAttribute("class", "shopware-popup");
-
-    let title = document.createElement("div");
-        title.setAttribute("class", "title");
-        title.style.cssText =
-            "background: #2a3138;" +
-            "color: #fff;" +
-            "font-size: 13px;" +
-            "padding: 8px 15px;" +
-            "border-radius: 3px 3px 0 0;";
-
-    let subTitle = document.createElement("i");
-        subTitle.setAttribute("class", "fa fa-lock");
-        subTitle.appendChild(document.createTextNode(" Verschlüsselter Einkauf über shopware.com"));
-        subTitle.style.cssText =
-            "margin-right: 5px;" +
-            "color: #00c600;";
-
-    title.appendChild(subTitle);
-    popup.appendChild(title);
-
-    popup.style.cssText =
-        'position: absolute;' +
-        'width: 400px;' +
-        'background: #fafafa;' +
-        'left: -75px;' +
-        'top: 90px;' +
-        'box-shadow: 0 0 5px 1px rgba(0,0,0,.2);' +
-        'z-index: 1000;' +
-        'padding-bottom: 40px;' +
-        'border-radius: 3px 3px 3px 3px;' +
-        'display: none';
-
-    let content = document.createElement("div");
-        content.setAttribute("class", "content");
-        content.style.cssText = "padding: 10px 15px;";
-
-    let labelNames = [
-        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
-    ];
-
-    let inputIds = [
-        "alternative-first-name", "alternative-last-name",
-        "alternative-email", "alternative-address",
-        "alternative-postcode", "alternative-city"
-    ];
-
-    let types = [
-        "text", "text", "email", "text", "text", "text"
-    ];
-
-    let placeholder = [
-        "Vorname", "Nachname", "E-Mail", "Straße", "Postleitzahl", "Ort"
-    ];
-
-        for(let i = 0; i < inputIds.length; i++){
-
-            let formEl = document.createElement("div");
-                formEl.setAttribute("class", "form-element");
-                formEl.style.cssText = "margin-bottom: 10px;";
-
-            let label = document.createElement("label");
-                label.appendChild(document.createTextNode(labelNames[i]));
-                label.style.cssText =
-                    "color: #999;" +
-                    "font-size: 13px;" +
-                    "margin: 0;" +
-                    "padding: 0;" +
-                    "margin-bottom: 3px;";
-
-            let input = document.createElement("input");
-                input.setAttribute("id", inputIds[i] + counter);
-                input.setAttribute("type", types[i]);
-                input.setAttribute("class", "form-control");
-                input.setAttribute("placeholder", placeholder[i]);
-                input.style.cssText =
-                    "border-radius: 3px 3px 3px 3px;" +
-                    "width: 100%;" +
-                    "font-size: 15px;" +
-                    "padding: 5px 10px;" +
-                    "border: 1px solid #eaeaea;";
-
-            formEl.appendChild(label);
-            formEl.appendChild(input);
-            content.appendChild(formEl);
-
-        }
-
-    labelNames = [
-        "Land", "Zahlungsart"
-    ];
-
-    let selectIds = [
-        "alternative-country", "alternative-payment-method"
-    ];
-
-    let selectNames = [
-        "country", "payment"
-    ];
-
-    let optionValues = [
-        "DE", "Nachnahme"
-    ];
-
-    let optionLabels = [
-        "Deutschland", "Nachnahme"
-    ];
-
-        for(let i = 0; i < selectIds.length; i++){
-
-            let formEl = document.createElement("div");
-            formEl.setAttribute("class", "form-element");
-
-            let label = document.createElement("label");
-            label.appendChild(document.createTextNode(labelNames[i]));
-            label.style.cssText =
-                "color: #999;" +
-                "font-size: 13px;" +
-                "margin: 0;" +
-                "padding: 0;" +
-                "margin-bottom: 3px;";
-
-            let select = document.createElement("select");
-            select.setAttribute("id", selectIds[i] + counter);
-            select.setAttribute("name", selectNames[i]);
-            select.style.cssText =
-                "border-radius: 3px 3px 3px 3px;" +
-                "width: 100%;" +
-                "font-size: 15px;" +
-                "background: #fff;" +
-                "border: 1px solid #eaeaea;";
-
-            let option = document.createElement("option");
-            option.setAttribute("value", optionValues[i]);
-            option.appendChild(document.createTextNode(optionLabels[i]));
-
-            formEl.appendChild(label);
-            select.appendChild(option);
-            formEl.appendChild(select);
-            content.appendChild(formEl);
-
-        }
-
-    let formAction = document.createElement("div");
-        formAction.setAttribute("class", "form-action");
-
-    let button = document.createElement("button");
-        button.setAttribute("id", "alternative-buy-button" + counter);
-        button.setAttribute("class", "btn btn-primary btn-submit");
-        button.style.cssText =
-            "width: 100%;" +
-            "background: #4496e0;" +
-            "border: 0 none;" +
-            "border-radius: 0 0 0 0;" +
-            "text-shadow: none;" +
-            "font-size: 14px;" +
-            "position: absolute;" +
-            "left: 0;" +
-            "bottom: 0;" +
-            "right: 0;" +
-            "padding: 10px 0;" +
-            "border-radius: 0 0 3px 3px;";
-
-    let label =  document.createElement("i");
-        label.setAttribute("class", "fa fa-angle-right");
-        label.appendChild(document.createTextNode(" Jetzt kostenpflichtig bestellen"));
-
-    button.appendChild(label);
-    formAction.appendChild(button);
-    content.appendChild(formAction);
-
-    popup.appendChild(content);
-
-    insertAfter(popup, buyButton);
-
-    //document.body.innerHTML='<object type="text/html" data="alternative-checkout.html" ></object>';
-
-    let checkout = document.createElement("object");
-        checkout.setAttribute("type", "text/html");
-        checkout.setAttribute("data", "alternative-checkout.html");
-        //checkout.style.display = "none";
-
-    insertAfter(checkout, buyButton);
-    */
 }
 
 function insertAfter(newNode, referenceNode) {
@@ -507,7 +290,7 @@ function getCountryId(iso, bearerToken){
     });
 }
 
-function useConfig(obj, id, counter){
+function useConfig(obj, id){
     if(id.titleSelector){
         document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
     }
@@ -526,20 +309,45 @@ function useConfig(obj, id, counter){
 
     if(id.buttonSelector){
         document.getElementById(id.buttonSelector).addEventListener("click", function(){
-            createCart(id.uuid, counter);
+            createCart(id.uuid);
         });
     }
 
-    let checkout = document.createElement("object");
-    checkout.setAttribute("type", "text/html");
-    checkout.setAttribute("data", "alternative-checkout.html");
-
-    insertAfter(checkout, document.getElementById(id.buttonSelector));
-
-
-    //addAlternativeCheckout(id, counter);
+    addAlternativeCheckout(id);
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
+}
+
+function getCheckoutContent(){
+    return new Promise((resolve) => {
+        let xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("readystatechange", function(){
+            if(this.readyState === 4) {
+                resolve(this.responseText);
+            }
+        });
+
+        xhr.open("GET", "/alternative-checkout.html");
+        xhr.send();
+    });
+}
+
+function addAlternativeCheckout(id) {
+    let buyButton = document.getElementById(id.buttonSelector);
+
+    getCheckoutContent().then(function (result) {
+        let div = document.createElement('div');
+            div.innerHTML = result;
+
+        let button = div.getElementsByTagName('button');
+            button[0].setAttribute("id", "alternative-buy-button");
+
+        let popup = div.getElementsByClassName('shopware-popup');
+            popup[0].setAttribute("id", "popup");
+
+        insertAfter(div, buyButton);
+    });
 }
 
 function apiAuth(){
