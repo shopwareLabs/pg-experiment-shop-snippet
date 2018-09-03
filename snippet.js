@@ -150,6 +150,13 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
+        if(document.getElementById("popup").style.display === "block") {
+            document.getElementById("popup").style.display = "none";
+        }
+        else {
+            document.getElementById("popup").style.display = "block";
+        }
+
         document.getElementById('alternative-buy-button').onclick = function () {
             let data = {
                 payerEmail: document.getElementById('alternative-email').value,
@@ -254,7 +261,7 @@ function getShippingOptions(shipping){
                     currency: 'EUR',
                     value: shipping[i].shippingCosts.totalPrice
                 },
-                selected: true,
+                selected: true
             }
         );
     }
@@ -296,7 +303,7 @@ function useConfig(obj, id){
     }
 
     if(id.descriptionSelector){
-        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description;
+        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description; //long
     }
 
     if(id.priceSelector){
@@ -345,6 +352,7 @@ function addAlternativeCheckout(id){
 
         let popup = div.getElementsByClassName('shopware-popup');
             popup[0].setAttribute("id", "popup");
+            popup[0].style.display = "none";
 
         insertAfter(div, buyButton);
     });
