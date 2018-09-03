@@ -1,15 +1,11 @@
 document.getElementsByTagName("BODY")[0].style.display = "none";
 
-// Host
 let host;
 
-// Client data
 let grant_type;
 
-// All product IDs
 let ids;
 
-// Token
 let accessToken;
 let contextToken;
 
@@ -203,7 +199,7 @@ function hideTheOther(counter) {
 
 function addAlternativeCheckout(id, counter){
     let buyButton = document.getElementById(id.buttonSelector);
-
+    /*
     let popup = document.createElement("div");
         popup.setAttribute("id", "popup" + counter);
         popup.setAttribute("class", "shopware-popup");
@@ -380,6 +376,16 @@ function addAlternativeCheckout(id, counter){
     popup.appendChild(content);
 
     insertAfter(popup, buyButton);
+
+    //document.body.innerHTML='<object type="text/html" data="alternative-checkout.html" ></object>';
+
+    let checkout = document.createElement("object");
+        checkout.setAttribute("type", "text/html");
+        checkout.setAttribute("data", "alternative-checkout.html");
+        //checkout.style.display = "none";
+
+    insertAfter(checkout, buyButton);
+    */
 }
 
 function insertAfter(newNode, referenceNode) {
@@ -524,7 +530,14 @@ function useConfig(obj, id, counter){
         });
     }
 
-    addAlternativeCheckout(id, counter);
+    let checkout = document.createElement("object");
+    checkout.setAttribute("type", "text/html");
+    checkout.setAttribute("data", "alternative-checkout.html");
+
+    insertAfter(checkout, document.getElementById(id.buttonSelector));
+
+
+    //addAlternativeCheckout(id, counter);
 
     document.getElementsByTagName("BODY")[0].style.display = "block";
 }
