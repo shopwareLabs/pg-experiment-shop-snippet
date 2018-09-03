@@ -333,7 +333,7 @@ function getCheckoutContent(){
     });
 }
 
-function addAlternativeCheckout(id) {
+function addAlternativeCheckout(id){
     let buyButton = document.getElementById(id.buttonSelector);
 
     getCheckoutContent().then(function (result) {
