@@ -185,11 +185,7 @@ function insertAfter(newNode, referenceNode) {
 function guestOrder(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
-
-    apiAuth().then(function(result){
-        if(result){
-            getCountryId(customer.shippingAddress.country, result).then(function(result){
-                let countryId = result;
+                let countryId = getCountryId(customer.shippingAddress.country);
 
                 if(name.length > 1){
                     data = JSON.stringify({
@@ -231,9 +227,6 @@ function guestOrder(customer){
                 xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
                 xhr.send(data);
-            });
-        }
-    });
 }
 
 function getImageByType(data, type){
@@ -268,33 +261,31 @@ function getShippingOptions(shipping){
     return shippingOptions;
 }
 
-function getCountryId(iso, bearerToken){
-    return new Promise((resolve) => {
-        let data = null;
-        let countryId = null;
+function getCountryId(iso){
+    let data = null;
+    let countryId = null;
 
-        let xhr = new XMLHttpRequest();
+    let xhr = new XMLHttpRequest();
 
-        xhr.addEventListener("readystatechange", function(){
-            if(this.readyState === 4){
-                let countries = JSON.parse(this.responseText).data;
-                for(let i = 0; i < countries.length; i++){
-                    if(iso === countries[i].attributes.iso){
-                        countryId = countries[i].id;
-                        resolve(countryId);
-                    }
+    xhr.addEventListener("readystatechange", function(){
+        if(this.readyState === 4){
+            let countries = JSON.parse(this.responseText).data;
+
+            for(let i = 0; i < countries.length; i++){
+                if(iso === countries[i].attributes.iso){
+                    countryId = countries[i].id;
+                    return countryId;
                 }
             }
-        });
-
-        xhr.open("GET", host + "/api/v1/country");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Authorization", bearerToken);
-        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-        xhr.send(data);
+        }
     });
+
+    xhr.open("GET", host + "/storefront-api/sales-channel/countries");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+    xhr.send(data);
 }
 
 function useConfig(obj, id){
@@ -357,7 +348,7 @@ function addAlternativeCheckout(id){
         insertAfter(div, buyButton);
     });
 }
-
+/*
 function apiAuth(){
     return new Promise((resolve) => {
         let data = JSON.stringify({
@@ -381,4 +372,4 @@ function apiAuth(){
 
         xhr.send(data);
     });
-}
+}*/
