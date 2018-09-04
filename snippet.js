@@ -149,31 +149,35 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
-        if(document.getElementById("popup").style.display === "block") {
-            document.getElementById("popup").style.display = "none";
-        }
-        else {
-            document.getElementById("popup").style.display = "block";
+        let id;
+        let productId = JSON.stringify(data.lineItems[0].key);
+
+        for(let i = 0; i < ids.length; i++){
+            if(JSON.stringify(ids[i].uuid) === productId){
+                id = JSON.stringify(ids[i]);
+            }
         }
 
-        document.getElementById('alternative-buy-button').onclick = function () {
-            let data = {
-                payerEmail: document.getElementById('alternative-email').value,
-                details: {
-                    billingAddress: {
-                        addressLine: [document.getElementById('alternative-address').value],
-                        city: document.getElementById('alternative-city').value,
-                        postalCode: document.getElementById('alternative-postcode').value,
-                        recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
+        addAlternativeCheckout(id).then(function (){
+            document.getElementById('alternative-buy-button').onclick = function () {
+                let data = {
+                    payerEmail: document.getElementById('alternative-email').value,
+                    details: {
+                        billingAddress: {
+                            addressLine: [document.getElementById('alternative-address').value],
+                            city: document.getElementById('alternative-city').value,
+                            postalCode: document.getElementById('alternative-postcode').value,
+                            recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
+                        }
+                    },
+                    shippingAddress: {
+                        country: document.getElementById('alternative-country').value
                     }
-                },
-                shippingAddress: {
-                    country: document.getElementById('alternative-country').value
-                }
-            };
-            guestOrder(data);
-            document.getElementById("popup").style.display = "none";
-        }
+                };
+                guestOrder(data);
+                document.classList.remove("popup");
+            }
+        });
     }
 }
 
@@ -303,8 +307,6 @@ function useConfig(obj, id){
             createCart(id.uuid);
         });
     }
-
-    addAlternativeCheckout(id);
 }
 
 function getCheckoutContent(){
@@ -324,20 +326,39 @@ function getCheckoutContent(){
 }
 
 function addAlternativeCheckout(id){
-    let buyButton = document.getElementById(id.buttonSelector);
+    return new Promise(resolve => {
+        let buyButton = document.getElementById(JSON.parse(id).buttonSelector);
 
-    getCheckoutContent().then(function (result) {
-        let div = document.createElement('div');
-            div.innerHTML = result;
+        getCheckoutContent().then(function (result) {
+            let div = document.createElement('div');
+                div.innerHTML = result;
 
-        let button = div.getElementsByTagName('button');
-            button[0].setAttribute("id", "alternative-buy-button");
+            let button = div.getElementsByTagName('button');
+                button[0].setAttribute("id", "alternative-buy-button");
+                button[0].onclick = function () {
+                    let data = {
+                        payerEmail: document.getElementById('alternative-email').value,
+                        details: {
+                            billingAddress: {
+                                addressLine: [document.getElementById('alternative-address').value],
+                                city: document.getElementById('alternative-city').value,
+                                postalCode: document.getElementById('alternative-postcode').value,
+                                recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
+                            }
+                        },
+                        shippingAddress: {
+                            country: document.getElementById('alternative-country').value
+                        }
+                    };
+                    guestOrder(data);
+                    document.classList.remove("popup");
+                };
 
-        let popup = div.getElementsByClassName('shopware-popup');
-            popup[0].setAttribute("id", "popup");
-            popup[0].style.display = "none";
+            let popup = div.getElementsByClassName('shopware-popup');
+                popup[0].setAttribute("id", "popup");
 
-        insertAfter(div, buyButton);
+            insertAfter(div, buyButton);
+        });
     });
 }
 
