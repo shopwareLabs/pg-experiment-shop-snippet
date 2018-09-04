@@ -229,15 +229,6 @@ function guestOrder(customer){
     });
 }
 
-function getImageByType(data, type){
-    return data.included
-        .filter((item) => {
-            return item.type === type;
-        }).map((item) => {
-            return item.attributes.extensions;
-        })[0].links.url;
-}
-
 function splitName(fullName){
     return fullName.split(" ");
 }
@@ -357,7 +348,6 @@ function getCurrencies(){
 
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
-            console.log(JSON.parse(this.responseText));
             return this.responseText;
         }
     });
