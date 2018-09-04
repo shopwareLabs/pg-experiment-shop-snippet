@@ -185,48 +185,49 @@ function insertAfter(newNode, referenceNode) {
 function guestOrder(customer){
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
-                let countryId = getCountryId(customer.shippingAddress.country);
 
-                if(name.length > 1){
-                    data = JSON.stringify({
-                        firstName: name[0],
-                        lastName: name[name.length-1],
-                        email: customer.payerEmail,
-                        billingCountry: countryId,
-                        billingZipcode: customer.details.billingAddress.postalCode,
-                        billingCity: customer.details.billingAddress.city,
-                        billingStreet: customer.details.billingAddress.addressLine[0]
-                    });
-                }
+    getCountryId(customer.shippingAddress.country).then(function (result) {
+        if (name.length > 1) {
+            data = JSON.stringify({
+                firstName: name[0],
+                lastName: name[name.length - 1],
+                email: customer.payerEmail,
+                billingCountry: result,
+                billingZipcode: customer.details.billingAddress.postalCode,
+                billingCity: customer.details.billingAddress.city,
+                billingStreet: customer.details.billingAddress.addressLine[0]
+            });
+        }
 
-                else {
-                    data = JSON.stringify({
-                        firstName: "Without first name",
-                        lastName: name[0],
-                        email: customer.payerEmail,
-                        billingCountry: countryId,
-                        billingZipcode: customer.details.billingAddress.postalCode,
-                        billingCity: customer.details.billingAddress.city,
-                        billingStreet: customer.details.billingAddress.addressLine[0]
-                    });
-                }
+        else {
+            data = JSON.stringify({
+                firstName: "Without first name",
+                lastName: name[0],
+                email: customer.payerEmail,
+                billingCountry: result,
+                billingZipcode: customer.details.billingAddress.postalCode,
+                billingCity: customer.details.billingAddress.city,
+                billingStreet: customer.details.billingAddress.addressLine[0]
+            });
+        }
 
-                let xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
 
-                xhr.addEventListener("readystatechange", function(){
-                    if(this.readyState === 4){
-                        let obj = JSON.parse(this.responseText);
-                        alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
-                        init();
-                    }
-                });
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                let obj = JSON.parse(this.responseText);
+                alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+                init();
+            }
+        });
 
-                xhr.open("POST", host + "/storefront-api/checkout/guest-order");
-                xhr.setRequestHeader("Content-Type", "application/json");
-                xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-                xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+        xhr.open("POST", host + "/storefront-api/checkout/guest-order");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
-                xhr.send(data);
+        xhr.send(data);
+    });
 }
 
 function getImageByType(data, type){
@@ -262,30 +263,32 @@ function getShippingOptions(shipping){
 }
 
 function getCountryId(iso){
-    let data = null;
-    let countryId = null;
+    return new Promise((resolve) => {
+        let data = null;
+        let countryId = null;
 
-    let xhr = new XMLHttpRequest();
+        let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
-            let countries = JSON.parse(this.responseText).data;
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === 4) {
+                let countries = JSON.parse(this.responseText).data;
 
-            for(let i = 0; i < countries.length; i++){
-                if(iso === countries[i].attributes.iso){
-                    countryId = countries[i].id;
-                    return countryId;
+                for (let i = 0; i < countries.length; i++) {
+                    if (iso === countries[i].attributes.iso) {
+                        countryId = countries[i].id;
+                        resolve(countryId);
+                    }
                 }
             }
-        }
+        });
+
+        xhr.open("GET", host + "/storefront-api/sales-channel/countries");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+        xhr.send(data);
     });
-
-    xhr.open("GET", host + "/storefront-api/sales-channel/countries");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function useConfig(obj, id){
@@ -327,6 +330,7 @@ function getCheckoutContent(){
         });
 
         xhr.open("GET", "/alternative-checkout.html");
+
         xhr.send();
     });
 }
@@ -348,28 +352,3 @@ function addAlternativeCheckout(id){
         insertAfter(div, buyButton);
     });
 }
-/*
-function apiAuth(){
-    return new Promise((resolve) => {
-        let data = JSON.stringify({
-            "client_id": "SWIANUFOY2VKSJDRCEL5Z2TIVW",
-            "client_secret": "NWV2Y0hIUmc4ckRpTlFLMkRIQ005bXNUdlQ2VmZSMjg5YVhoNTY",
-            "grant_type": grant_type
-        });
-
-        let xhr = new XMLHttpRequest();
-
-        xhr.addEventListener("readystatechange", function(){
-            if(this.readyState === 4) {
-                resolve(JSON.parse(this.responseText).access_token);
-            }
-        });
-
-        xhr.open("POST", host + "/api/oauth/token");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-        xhr.send(data);
-    });
-}*/
