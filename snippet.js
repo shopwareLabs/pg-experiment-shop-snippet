@@ -353,6 +353,7 @@ function getCurrencies(){
     });
 
     xhr.open("GET", host + "/storefront-api/sales-channel/currencies");
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("X-SW-Context-Token", contextToken);
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
