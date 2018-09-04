@@ -1,5 +1,3 @@
-document.getElementsByTagName("BODY")[0].style.display = "none";
-
 let host;
 
 let grant_type;
@@ -315,8 +313,6 @@ function useConfig(obj, id){
     }
 
     addAlternativeCheckout(id);
-
-    document.getElementsByTagName("BODY")[0].style.display = "block";
 }
 
 function getCheckoutContent(){
@@ -351,4 +347,24 @@ function addAlternativeCheckout(id){
 
         insertAfter(div, buyButton);
     });
+}
+
+function getCurrencies(){
+    let data = null;
+
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+            console.log(JSON.parse(this.responseText));
+            return this.responseText;
+        }
+    });
+
+    xhr.open("GET", host + "/storefront-api/sales-channel/currencies");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+
+    xhr.send(data);
 }
