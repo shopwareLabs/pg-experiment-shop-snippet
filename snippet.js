@@ -15,7 +15,7 @@ function init(){
     accessToken = configuration.access_token;
     grant_type = configuration.grant_type;
 
-    ids = products.slice();
+    ids = configuration.products.slice();
 
     for(let i = 0; i < ids.length; i++){
         query(ids[i]);
