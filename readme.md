@@ -10,15 +10,16 @@ Your customers can order your products with only one click without to leave the 
 
 ## How can i use it?
 
-1. Before you integrate the shop snippet into your document, you have to hand over a configuration object.
+* Before you integrate the shop snippet into your document, you have to hand over a configuration object.
 
-    1. This configuration object includes the address to the host, the access token, the grant type and a product array.
-    2. Into the product array you can add unlimited your products to your own page.
-    
-2. 
-   
-   
-   The configuration object should looks like:
+    * This configuration object includes the address to the host, the access token, the grant type and a product array.
+    * Into the product array you can add unlimited number of products to your own page.
+    * To do this, you have to hand over an UUID of your desired product and a button selector, to make your button to your buy button.
+    * Optional you can hand over a price selector, a title selector, a description selector and a image selector.
+    * With the selectors you can place the product data on your page using the id's of your html elements.
+    * The product data will be loaded into your HTML elements and displayed on your page.
+
+The configuration object should look like:
    
        <script>
            let configuration = {
@@ -42,3 +43,11 @@ Your customers can order your products with only one click without to leave the 
                }]
            }
        </script>
+
+* Now you can integrate the shop snippet.
+
+This could look like:
+
+        <script src="snippet.js"></script>
+   
+   
