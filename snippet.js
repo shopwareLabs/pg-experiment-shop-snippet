@@ -15,7 +15,7 @@ function init(){
     accessToken = configuration.access_token;
     grant_type = configuration.grant_type;
 
-    ids = products.slice();
+    ids = configuration.products.slice();
 
     for(let i = 0; i < ids.length; i++){
         query(ids[i]);
@@ -36,6 +36,7 @@ function query(id){
 
     xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
@@ -228,15 +229,6 @@ function guestOrder(customer){
     });
 }
 
-function getImageByType(data, type){
-    return data.included
-        .filter((item) => {
-            return item.type === type;
-        }).map((item) => {
-            return item.attributes.extensions;
-        })[0].links.url;
-}
-
 function splitName(fullName){
     return fullName.split(" ");
 }
@@ -291,19 +283,19 @@ function getCountryId(iso){
 
 function useConfig(obj, id){
     if(id.titleSelector){
-        document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
+        document.getElementById(id.titleSelector).innerHTML = obj.data.name;
     }
 
     if(id.descriptionSelector){
-        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description; //long
+        document.getElementById(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
     }
 
     if(id.priceSelector){
-        document.getElementById(id.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+        document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " €";
     }
 
     if(id.imageSelector){
-        document.getElementById(id.imageSelector).src = getImageByType(obj, 'media');
+        document.getElementById(id.imageSelector).src = obj.data.cover.media.url;
     }
 
     if(id.buttonSelector){
@@ -356,12 +348,12 @@ function getCurrencies(){
 
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === 4) {
-            console.log(JSON.parse(this.responseText));
             return this.responseText;
         }
     });
 
     xhr.open("GET", host + "/storefront-api/sales-channel/currencies");
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("X-SW-Context-Token", contextToken);
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);

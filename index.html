@@ -67,21 +67,17 @@
 
             <div class="product-description">
 
-                <h1 id="test-title">Shopware Sample Product</h1>
+                <h1 id="test-title"></h1>
 
-                <p id="test-description">
-                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
-                </p>
+                <p id="test-description"></p>
 
-                <p id="test-price">
-                    2.190,00 € - Lieferbar innerhalb von 1 - 3 Werktagen
-                </p>
+                <p id="test-price"></p>
 
                 <div class="product-buy-container">
                     <a id="test-button" href="#" class="btn btn-primary btn-buy">
-                        Jetzt kostenpflichtig bestellen
+                        Chargeable order now
 
-                        <span><i class="fa fa-lock"></i> Sicher einkaufen über shopware.com</span>
+                        <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
                     </a>
 
                 </div>
@@ -96,20 +92,16 @@
 
             <div class="product-description">
 
-                <h1 id="test-title2">Additional Information</h1>
+                <h1 id="test-title2"></h1>
 
-                <p id="test-description2">
-                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
-                </p>
+                <p id="test-description2"></p>
 
-                <p id="test-price2">
-                    Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr.
-                </p>
+                <p id="test-price2"></p>
 
                 <a id="test-button2" href="#" class="btn btn-primary btn-buy">
-                    Jetzt kostenpflichtig bestellen
+                    Chargeable order now
 
-                    <span><i class="fa fa-lock"></i> Sicher einkaufen über shopware.com</span>
+                    <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
                 </a>
 
             </div>
@@ -122,31 +114,24 @@
 <script>
     let configuration = {
         host: 'http://localhost:8000',
-        access_token: 'SWSCZTZHSTVZCWVZOTRRQZHYWG',
-        grant_type: 'client_credentials'
-    };
-
-    let products = [
-
-         {
-            uuid: '024b8268309648d8a5393d4c75684588',
+        access_token: 'SWSCCEHUQ1HYDEV0RTZBT3PUBG',
+        grant_type: 'client_credentials',
+        products: [{
+            uuid: '010b94bd11be4ae29aa52d05a5dc73d9',
             priceSelector: 'test-price',
             titleSelector: 'test-title',
             descriptionSelector: 'test-description',
-            //imageSelector: 'test-image',
+            imageSelector: 'test-image',
             buttonSelector: 'test-button'
-        },
-
-        {
-            uuid: '024b8268309648d8a5393d4c75684588',
+        }, {
+            uuid: '011b125c00324549a5503a2e2a889a08',
             priceSelector: 'test-price2',
             titleSelector: 'test-title2',
             descriptionSelector: 'test-description2',
-            //imageSelector: 'test-image2',
+            imageSelector: 'test-image2',
             buttonSelector: 'test-button2'
-        }
-
-    ];
+        }]
+    };
 </script>
 <script src="snippet.js"></script>
 </body>
