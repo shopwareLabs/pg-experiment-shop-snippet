@@ -36,6 +36,7 @@ function query(id){
 
     xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
     xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
@@ -291,19 +292,19 @@ function getCountryId(iso){
 
 function useConfig(obj, id){
     if(id.titleSelector){
-        document.getElementById(id.titleSelector).innerHTML = obj.data.attributes.name;
+        document.getElementById(id.titleSelector).innerHTML = obj.data.name;
     }
 
     if(id.descriptionSelector){
-        document.getElementById(id.descriptionSelector).innerHTML = obj.data.attributes.description; //long
+        document.getElementById(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
     }
 
     if(id.priceSelector){
-        document.getElementById(id.priceSelector).innerHTML = obj.data.attributes.price.gross + " €";
+        document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " €";
     }
 
     if(id.imageSelector){
-        document.getElementById(id.imageSelector).src = getImageByType(obj, 'media');
+        document.getElementById(id.imageSelector).src = obj.data.cover.media.url;
     }
 
     if(id.buttonSelector){
