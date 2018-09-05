@@ -78,6 +78,7 @@ function createShoppingCart(id) {
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart");
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
@@ -102,6 +103,7 @@ function addItemToCart(id) {
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
+    xhr.setRequestHeader("Accept", "application/json");
     xhr.setRequestHeader("Content-Type", "application/json");
     xhr.setRequestHeader("X-SW-Context-Token", contextToken);
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
@@ -156,7 +158,7 @@ function paymentRequestApi(data) {
                 }
             },
             {
-                label: "VAT",
+                label: getLanguageSnippet("vat"),
                 amount: {
                     currency: configuration.currency[0].type,
                     value: price.calculatedTaxes[0].tax
@@ -272,7 +274,7 @@ function getCountryId(iso) {
                 let countries = JSON.parse(this.responseText).data;
 
                 for (let i = 0; i < countries.length; i++) {
-                    if (iso === countries[i].attributes.iso) {
+                    if (iso === countries[i].iso) {
                         countryId = countries[i].id;
                         resolve(countryId);
                     }
@@ -282,6 +284,7 @@ function getCountryId(iso) {
 
         xhr.open("GET", host + "/storefront-api/sales-channel/countries");
         xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Accept", "application/json");
         xhr.setRequestHeader("X-SW-Context-Token", contextToken);
         xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
@@ -391,6 +394,7 @@ function loadLanguageSnippets() {
     languageSnippets = {
         thankYouForYourOrder: "Thank you for your order!",
         total: "Total",
+        vat: "VAT",
         withoutFirstName: "Without first name",
         yourGoodsWillBeDeliveredTo: "Your goods will be delivered to: "
     }
