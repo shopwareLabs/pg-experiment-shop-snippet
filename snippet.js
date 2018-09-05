@@ -151,14 +151,14 @@ function paymentRequestApi(data) {
             {
                 label: productName,
                 amount: {
-                    currency: 'EUR',
+                    currency: configuration.currency[0].type,
                     value: price.netPrice
                 }
             },
             {
                 label: "VAT",
                 amount: {
-                    currency: "EUR",
+                    currency: configuration.currency[0].type,
                     value: price.calculatedTaxes[0].tax
                 }
             }
@@ -167,7 +167,7 @@ function paymentRequestApi(data) {
         total: {
             label: getLanguageSnippet("total"),
             amount: {
-                currency: 'EUR',
+                currency: configuration.currency[0].type,
                 value: price.totalPrice
             }
         }
@@ -215,7 +215,7 @@ function guestOrder(customer) {
         if (name.length > 1) {
             data.firstName = name[0];
         }
-        
+
         data = JSON.stringify(data);
 
         let xhr = new XMLHttpRequest();
@@ -250,7 +250,7 @@ function getShippingOptions(shipping) {
                 id: shipping[i].shippingMethod.id,
                 label: shipping[i].shippingMethod.name,
                 amount: {
-                    currency: 'EUR',
+                    currency: configuration.currency[0].type,
                     value: shipping[i].shippingCosts.totalPrice
                 },
                 selected: true
@@ -299,7 +299,7 @@ function loadSelectors(obj, id) {
     }
 
     if (id.priceSelector) {
-        document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " €";
+        document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " " + configuration.currency[0].symbol;
     }
 
     if (id.imageSelector) {
