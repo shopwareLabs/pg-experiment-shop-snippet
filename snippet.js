@@ -113,9 +113,9 @@ function addItemToCart(id) {
 
 function showPaymentRequest(productData) {
     if (!window.PaymentRequest) {
-        if (document.getElementById("popup")) {
-            let popup = document.getElementById("popup");
-            popup.parentNode.removeChild(popup);
+        if(document.querySelector('div.shopware-popup')){
+            let popup = document.querySelector('div.shopware-popup');
+                popup.parentNode.removeChild(popup);
         }
 
         let id;
@@ -334,11 +334,6 @@ function getCheckoutContent() {
 
 function addAlternativeCheckout(id) {
     return new Promise(resolve => {
-        if(document.querySelector('div.shopware-popup')){
-            let popup = document.querySelector('div.shopware-popup');
-                popup.parentNode.removeChild(popup);
-        }
-
         let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
         getCheckoutContent().then(function (result) {
