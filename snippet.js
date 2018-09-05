@@ -334,61 +334,43 @@ function getCheckoutContent() {
 
 function addAlternativeCheckout(id) {
     return new Promise(resolve => {
-        alert(document.getElementById(JSON.parse(id).buttonSelector));
-        let buyButton = document.getElementById(JSON.parse(id).buttonSelector);
+        if(document.querySelector('div.shopware-popup')){
+            let popup = document.querySelector('div.shopware-popup');
+                popup.parentNode.removeChild(popup);
+        }
+
+        let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
         getCheckoutContent().then(function (result) {
             let div = document.createElement('div');
             div.innerHTML = result;
 
             let button = div.getElementsByTagName('button');
-            button[0].setAttribute("id", "alternative-buy-button");
-            button[0].onclick = function () {
+                button[0].setAttribute("class", "btn-submit");
+                button[0].onclick = function () {
                 let data = {
-                    payerEmail: document.getElementById('alternative-email').value,
+                    payerEmail: document.querySelector('.alternative-email').value,
                     details: {
                         billingAddress: {
-                            addressLine: [document.getElementById('alternative-address').value],
-                            city: document.getElementById('alternative-city').value,
-                            postalCode: document.getElementById('alternative-postcode').value,
-                            recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
+                            addressLine: [document.querySelector('.alternative-address').value],
+                            city: document.querySelector('.alternative-city').value,
+                            postalCode: document.querySelector('.alternative-postcode').value,
+                            recipient: document.querySelector('.alternative-first-name').value + " " + document.querySelector('.alternative-last-name').value
                         }
                     },
                     shippingAddress: {
-                        country: document.getElementById('alternative-country').value
+                        country: document.querySelector('.alternative-country').value
                     }
                 };
                 guestOrder(data);
 
-                popup[0].parentNode.removeChild(popup[0]);
+                let popup = document.querySelector('div.shopware-popup');
+                    popup.parentNode.removeChild(popup);
             };
-
-            let popup = div.getElementsByClassName('shopware-popup');
-            popup[0].setAttribute("id", "popup");
 
             insertElementAfterTarget(div, buyButton);
         });
     });
-}
-
-function getCurrencies() {
-    let data = null;
-
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === requiredState) {
-            return this.responseText;
-        }
-    });
-
-    xhr.open("GET", host + "/storefront-api/sales-channel/currencies");
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function loadLanguageSnippets() {
