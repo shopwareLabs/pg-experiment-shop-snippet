@@ -193,7 +193,7 @@ function paymentRequestApi(data) {
         })
 }
 
-function insertAfter(newNode, referenceNode) {
+function insertElementAfterTarget(newNode, referenceNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
@@ -202,29 +202,21 @@ function guestOrder(customer) {
     let data;
 
     getCountryId(customer.shippingAddress.country).then(function (result) {
-        if (name.length > 1) {
-            data = JSON.stringify({
-                firstName: name[0],
-                lastName: name[name.length - 1],
-                email: customer.payerEmail,
-                billingCountry: result,
-                billingZipcode: customer.details.billingAddress.postalCode,
-                billingCity: customer.details.billingAddress.city,
-                billingStreet: customer.details.billingAddress.addressLine[0]
-            });
-        }
+        data = {
+            firstName: getLanguageSnippet("withoutFirstName"),
+            lastName: name[name.length - 1],
+            email: customer.payerEmail,
+            billingCountry: result,
+            billingZipcode: customer.details.billingAddress.postalCode,
+            billingCity: customer.details.billingAddress.city,
+            billingStreet: customer.details.billingAddress.addressLine[0]
+        };
 
-        else {
-            data = JSON.stringify({
-                firstName: getLanguageSnippet("withoutFirstName"),
-                lastName: name[0],
-                email: customer.payerEmail,
-                billingCountry: result,
-                billingZipcode: customer.details.billingAddress.postalCode,
-                billingCity: customer.details.billingAddress.city,
-                billingStreet: customer.details.billingAddress.addressLine[0]
-            });
+        if (name.length > 1) {
+            data.firstName = name[0];
         }
+        
+        data = JSON.stringify(data);
 
         let xhr = new XMLHttpRequest();
 
@@ -370,7 +362,7 @@ function addAlternativeCheckout(id) {
             let popup = div.getElementsByClassName('shopware-popup');
             popup[0].setAttribute("id", "popup");
 
-            insertAfter(div, buyButton);
+            insertElementAfterTarget(div, buyButton);
         });
     });
 }
