@@ -149,6 +149,11 @@ function paymentRequest(data){
             })
             .catch(err => console.error(err));
     } else {
+        if(document.getElementById("popup")){
+            let popup = document.getElementById("popup");
+                popup.parentNode.removeChild(popup);
+        }
+
         let id;
         let productId = JSON.stringify(data.lineItems[0].key);
 
@@ -158,26 +163,7 @@ function paymentRequest(data){
             }
         }
 
-        addAlternativeCheckout(id).then(function (){
-            document.getElementById('alternative-buy-button').onclick = function () {
-                let data = {
-                    payerEmail: document.getElementById('alternative-email').value,
-                    details: {
-                        billingAddress: {
-                            addressLine: [document.getElementById('alternative-address').value],
-                            city: document.getElementById('alternative-city').value,
-                            postalCode: document.getElementById('alternative-postcode').value,
-                            recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
-                        }
-                    },
-                    shippingAddress: {
-                        country: document.getElementById('alternative-country').value
-                    }
-                };
-                guestOrder(data);
-                document.classList.remove("popup");
-            }
-        });
+        addAlternativeCheckout(id);
     }
 }
 
@@ -351,7 +337,8 @@ function addAlternativeCheckout(id){
                         }
                     };
                     guestOrder(data);
-                    document.classList.remove("popup");
+
+                    popup[0].parentNode.removeChild(popup[0]);
                 };
 
             let popup = div.getElementsByClassName('shopware-popup');
