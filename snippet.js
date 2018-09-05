@@ -1,36 +1,59 @@
 let host;
 
-let grant_type;
-
 let ids;
 
 let accessToken;
 let contextToken;
 
+const requiredState = 4;
+
+let languageSnippets;
+
 init();
 
-function init(){
-    host = configuration.host;
+function init() {
+    loadLanguageSnippets();
 
-    accessToken = configuration.access_token;
-    grant_type = configuration.grant_type;
+    if (configuration.host) {
+        host = configuration.host;
+    }
 
-    ids = configuration.products.slice();
+    if (configuration.access_token) {
+        accessToken = configuration.access_token;
+    }
 
-    for(let i = 0; i < ids.length; i++){
-        query(ids[i]);
+    if (configuration.products) {
+        ids = configuration.products.slice();
+
+        for (let i = 0; i < ids.length; i++) {
+            productDataQuery(ids[i]);
+        }
     }
 }
 
-function query(id){
+function registerEvents() {
+
+}
+
+function readyStateChange() {
+    let xhr = new XMLHttpRequest();
+
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === requiredState) {
+
+        }
+    });
+}
+
+function productDataQuery(id) {
     let data = null;
 
     let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4) {
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === requiredState) {
             let obj = JSON.parse(this.responseText);
-            useConfig(obj, id);
+            loadSelectors(obj, id);
         }
     });
 
@@ -42,16 +65,16 @@ function query(id){
     xhr.send(data);
 }
 
-function createCart(id){
+function createShoppingCart(id) {
     let data = null;
 
     let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-       if(this.readyState === 4){
-           contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-           addItemToCart(id);
-       }
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === requiredState) {
+            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
+            addItemToCart(id);
+        }
     });
 
     xhr.open("POST", host + "/storefront-api/checkout/cart");
@@ -60,7 +83,7 @@ function createCart(id){
     xhr.send(data);
 }
 
-function addItemToCart(id){
+function addItemToCart(id) {
     let data = JSON.stringify({
         "type": "product",
         "quantity": 1,
@@ -71,8 +94,8 @@ function addItemToCart(id){
 
     let xhr = new XMLHttpRequest();
 
-    xhr.addEventListener("readystatechange", function(){
-        if(this.readyState === 4){
+    xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === requiredState) {
             let data = JSON.parse(this.responseText).data;
             paymentRequest(data);
         }
@@ -86,92 +109,95 @@ function addItemToCart(id){
     xhr.send(data);
 }
 
-function paymentRequest(data){
-    let productName = data.lineItems[0].label;
-    let price = data.price;
-    let shipping = data.deliveries;
-
-    if(window.PaymentRequest) {
-        const supportedPaymentMethods = [
-            {
-                supportedMethods: 'basic-card',
-                data: {
-                    supportedNetworks: ["visa", "mastercard", "amex"],
-                    supportedTypes: ["debit", "credit"]
-                }
-            }
-        ];
-
-        const paymentDetails = {
-            displayItems: [
-                {
-                    label: productName,
-                    amount: {
-                        currency: 'EUR',
-                        value: price.netPrice
-                    }
-                },
-                {
-                    label: "VAT",
-                    amount: {
-                        currency: "EUR",
-                        value: price.calculatedTaxes[0].tax
-                    }
-                }
-            ],
-            shippingOptions: getShippingOptions(shipping),
-            total: {
-                label: "Total",
-                amount:{
-                    currency: 'EUR',
-                    value: price.totalPrice
-                }
-            }
-        };
-
-        const options = {
-            requestPayerEmail: true,
-            requestShipping: true,
-        };
-
-        const paymentRequest = new PaymentRequest(
-            supportedPaymentMethods,
-            paymentDetails,
-            options
-        );
-
-        return paymentRequest.show()
-            .then(paymentResponse => {
-                data = paymentResponse;
-                guestOrder(data);
-
-                return paymentResponse.complete();
-            })
-            .catch(err => console.error(err));
-    } else {
-        if(document.getElementById("popup")){
+function paymentRequest(data) {
+    if (!window.PaymentRequest) {
+        if (document.getElementById("popup")) {
             let popup = document.getElementById("popup");
-                popup.parentNode.removeChild(popup);
+            popup.parentNode.removeChild(popup);
         }
 
         let id;
         let productId = JSON.stringify(data.lineItems[0].key);
 
-        for(let i = 0; i < ids.length; i++){
-            if(JSON.stringify(ids[i].uuid) === productId){
+        for (let i = 0; i < ids.length; i++) {
+            if (JSON.stringify(ids[i].uuid) === productId) {
                 id = JSON.stringify(ids[i]);
             }
         }
 
         addAlternativeCheckout(id);
     }
+
+    paymentRequestApi(data);
+}
+
+function paymentRequestApi(data) {
+    let productName = data.lineItems[0].label;
+    let price = data.price;
+    let shipping = data.deliveries;
+
+    const supportedPaymentMethods = [
+        {
+            supportedMethods: 'basic-card',
+            data: {
+                supportedNetworks: ["visa", "mastercard", "amex"],
+                supportedTypes: ["debit", "credit"]
+            }
+        }
+    ];
+
+    const paymentDetails = {
+        displayItems: [
+            {
+                label: productName,
+                amount: {
+                    currency: 'EUR',
+                    value: price.netPrice
+                }
+            },
+            {
+                label: "VAT",
+                amount: {
+                    currency: "EUR",
+                    value: price.calculatedTaxes[0].tax
+                }
+            }
+        ],
+        shippingOptions: getShippingOptions(shipping),
+        total: {
+            label: getLanguageSnippet("total"),
+            amount: {
+                currency: 'EUR',
+                value: price.totalPrice
+            }
+        }
+    };
+
+    const options = {
+        requestPayerEmail: true,
+        requestShipping: true,
+    };
+
+    const paymentRequest = new PaymentRequest(
+        supportedPaymentMethods,
+        paymentDetails,
+        options
+    );
+
+    return paymentRequest.show()
+        .then(paymentResponse => {
+            data = paymentResponse;
+            guestOrder(data);
+
+            return paymentResponse.complete();
+        })
 }
 
 function insertAfter(newNode, referenceNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
 }
 
-function guestOrder(customer){
+function guestOrder(customer) {
     let name = splitName(customer.details.billingAddress.recipient);
     let data;
 
@@ -190,7 +216,7 @@ function guestOrder(customer){
 
         else {
             data = JSON.stringify({
-                firstName: "Without first name",
+                firstName: getLanguageSnippet("withoutFirstName"),
                 lastName: name[0],
                 email: customer.payerEmail,
                 billingCountry: result,
@@ -203,9 +229,9 @@ function guestOrder(customer){
         let xhr = new XMLHttpRequest();
 
         xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === 4) {
+            if (this.readyState === requiredState) {
                 let obj = JSON.parse(this.responseText);
-                alert("Thank you for your order, " + obj.data.billingAddress.lastName + "!\nYour goods will be delivered to: " + obj.data.billingAddress.street);
+                alert(getLanguageSnippet("thankYouForYourOrder") + "\n" + getLanguageSnippet("yourGoodsWillBeDeliveredTo") + obj.data.billingAddress.street);
                 init();
             }
         });
@@ -219,19 +245,19 @@ function guestOrder(customer){
     });
 }
 
-function splitName(fullName){
+function splitName(fullName) {
     return fullName.split(" ");
 }
 
-function getShippingOptions(shipping){
+function getShippingOptions(shipping) {
     let shippingOptions = [];
 
-    for(let i = 0; i < shipping.length; i++){
+    for (let i = 0; i < shipping.length; i++) {
         shippingOptions.push(
             {
                 id: shipping[i].shippingMethod.id,
                 label: shipping[i].shippingMethod.name,
-                amount:{
+                amount: {
                     currency: 'EUR',
                     value: shipping[i].shippingCosts.totalPrice
                 },
@@ -242,7 +268,7 @@ function getShippingOptions(shipping){
     return shippingOptions;
 }
 
-function getCountryId(iso){
+function getCountryId(iso) {
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
@@ -250,7 +276,7 @@ function getCountryId(iso){
         let xhr = new XMLHttpRequest();
 
         xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === 4) {
+            if (this.readyState === requiredState) {
                 let countries = JSON.parse(this.responseText).data;
 
                 for (let i = 0; i < countries.length; i++) {
@@ -271,36 +297,36 @@ function getCountryId(iso){
     });
 }
 
-function useConfig(obj, id){
-    if(id.titleSelector){
+function loadSelectors(obj, id) {
+    if (id.titleSelector) {
         document.getElementById(id.titleSelector).innerHTML = obj.data.name;
     }
 
-    if(id.descriptionSelector){
+    if (id.descriptionSelector) {
         document.getElementById(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
     }
 
-    if(id.priceSelector){
+    if (id.priceSelector) {
         document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " €";
     }
 
-    if(id.imageSelector){
+    if (id.imageSelector) {
         document.getElementById(id.imageSelector).src = obj.data.cover.media.url;
     }
 
-    if(id.buttonSelector){
-        document.getElementById(id.buttonSelector).addEventListener("click", function(){
-            createCart(id.uuid);
+    if (id.buttonSelector) {
+        document.getElementById(id.buttonSelector).addEventListener("click", function () {
+            createShoppingCart(id.uuid);
         });
     }
 }
 
-function getCheckoutContent(){
+function getCheckoutContent() {
     return new Promise((resolve) => {
         let xhr = new XMLHttpRequest();
 
-        xhr.addEventListener("readystatechange", function(){
-            if(this.readyState === 4) {
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === requiredState) {
                 resolve(this.responseText);
             }
         });
@@ -311,51 +337,51 @@ function getCheckoutContent(){
     });
 }
 
-function addAlternativeCheckout(id){
+function addAlternativeCheckout(id) {
     return new Promise(resolve => {
         let buyButton = document.getElementById(JSON.parse(id).buttonSelector);
 
         getCheckoutContent().then(function (result) {
             let div = document.createElement('div');
-                div.innerHTML = result;
+            div.innerHTML = result;
 
             let button = div.getElementsByTagName('button');
-                button[0].setAttribute("id", "alternative-buy-button");
-                button[0].onclick = function () {
-                    let data = {
-                        payerEmail: document.getElementById('alternative-email').value,
-                        details: {
-                            billingAddress: {
-                                addressLine: [document.getElementById('alternative-address').value],
-                                city: document.getElementById('alternative-city').value,
-                                postalCode: document.getElementById('alternative-postcode').value,
-                                recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
-                            }
-                        },
-                        shippingAddress: {
-                            country: document.getElementById('alternative-country').value
+            button[0].setAttribute("id", "alternative-buy-button");
+            button[0].onclick = function () {
+                let data = {
+                    payerEmail: document.getElementById('alternative-email').value,
+                    details: {
+                        billingAddress: {
+                            addressLine: [document.getElementById('alternative-address').value],
+                            city: document.getElementById('alternative-city').value,
+                            postalCode: document.getElementById('alternative-postcode').value,
+                            recipient: document.getElementById('alternative-first-name').value + " " + document.getElementById('alternative-last-name').value
                         }
-                    };
-                    guestOrder(data);
-
-                    popup[0].parentNode.removeChild(popup[0]);
+                    },
+                    shippingAddress: {
+                        country: document.getElementById('alternative-country').value
+                    }
                 };
+                guestOrder(data);
+
+                popup[0].parentNode.removeChild(popup[0]);
+            };
 
             let popup = div.getElementsByClassName('shopware-popup');
-                popup[0].setAttribute("id", "popup");
+            popup[0].setAttribute("id", "popup");
 
             insertAfter(div, buyButton);
         });
     });
 }
 
-function getCurrencies(){
+function getCurrencies() {
     let data = null;
 
     let xhr = new XMLHttpRequest();
 
     xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === 4) {
+        if (this.readyState === requiredState) {
             return this.responseText;
         }
     });
@@ -367,4 +393,22 @@ function getCurrencies(){
     xhr.setRequestHeader("X-SW-Access-Key", accessToken);
 
     xhr.send(data);
+}
+
+function loadLanguageSnippets() {
+    languageSnippets = {
+        thankYouForYourOrder: "Thank you for your order!",
+        total: "Total",
+        withoutFirstName: "Without first name",
+        yourGoodsWillBeDeliveredTo: "Your goods will be delivered to: "
+    }
+}
+
+function getLanguageSnippet(snippet) {
+    if (languageSnippets[snippet]) {
+        return languageSnippets[snippet];
+    }
+    else {
+        return snippet;
+    }
 }
