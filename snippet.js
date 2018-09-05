@@ -98,7 +98,7 @@ function addItemToCart(id) {
     xhr.addEventListener("readystatechange", function () {
         if (this.readyState === requiredState) {
             let data = JSON.parse(this.responseText).data;
-            paymentRequest(data);
+            showPaymentRequest(data);
         }
     });
 
@@ -111,7 +111,7 @@ function addItemToCart(id) {
     xhr.send(data);
 }
 
-function paymentRequest(data) {
+function showPaymentRequest(productData) {
     if (!window.PaymentRequest) {
         if (document.getElementById("popup")) {
             let popup = document.getElementById("popup");
@@ -119,7 +119,7 @@ function paymentRequest(data) {
         }
 
         let id;
-        let productId = JSON.stringify(data.lineItems[0].key);
+        let productId = JSON.stringify(productData.lineItems[0].key);
 
         for (let i = 0; i < ids.length; i++) {
             if (JSON.stringify(ids[i].uuid) === productId) {
@@ -130,10 +130,10 @@ function paymentRequest(data) {
         addAlternativeCheckout(id);
     }
 
-    paymentRequestApi(data);
+    usePaymentRequestApi(productData);
 }
 
-function paymentRequestApi(data) {
+function usePaymentRequestApi(data) {
     let productName = data.lineItems[0].label;
     let price = data.price;
     let shipping = data.deliveries;
@@ -294,23 +294,23 @@ function getCountryId(iso) {
 
 function loadSelectors(obj, id) {
     if (id.titleSelector) {
-        document.getElementById(id.titleSelector).innerHTML = obj.data.name;
+        document.querySelector(id.titleSelector).innerHTML = obj.data.name;
     }
 
     if (id.descriptionSelector) {
-        document.getElementById(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
+        document.querySelector(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
     }
 
     if (id.priceSelector) {
-        document.getElementById(id.priceSelector).innerHTML = obj.data.price.gross + " " + configuration.currency[0].symbol;
+        document.querySelector(id.priceSelector).innerHTML = obj.data.price.gross + " " + configuration.currency[0].symbol;
     }
 
     if (id.imageSelector) {
-        document.getElementById(id.imageSelector).src = obj.data.cover.media.url;
+        document.querySelector(id.imageSelector).src = obj.data.cover.media.url;
     }
 
     if (id.buttonSelector) {
-        document.getElementById(id.buttonSelector).addEventListener("click", function () {
+        document.querySelector(id.buttonSelector).addEventListener("click", function () {
             createShoppingCart(id.uuid);
         });
     }
@@ -326,7 +326,7 @@ function getCheckoutContent() {
             }
         });
 
-        xhr.open("GET", "/alternative-checkout.html");
+        xhr.open("GET", configuration.alternativeCheckoutPath);
 
         xhr.send();
     });
@@ -334,6 +334,7 @@ function getCheckoutContent() {
 
 function addAlternativeCheckout(id) {
     return new Promise(resolve => {
+        alert(document.getElementById(JSON.parse(id).buttonSelector));
         let buyButton = document.getElementById(JSON.parse(id).buttonSelector);
 
         getCheckoutContent().then(function (result) {
