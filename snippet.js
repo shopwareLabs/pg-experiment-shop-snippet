@@ -8,8 +8,9 @@
     let xhr;
     const requiredState = 4;
 
-    let init = function() {
-        registerEvents();
+    let init = function () {
+        xhr = new XMLHttpRequest();
+
         loadLanguageSnippets();
 
         if (configuration.host) {
@@ -23,21 +24,17 @@
         if (configuration.products) {
             products = configuration.products.slice();
 
-            products.forEach(function (product){
+            products.forEach(function (product) {
                 productDataQuery(product);
             });
         }
 
-        if(configuration.allowPaymentRequestApi != null && !configuration.allowPaymentRequestApi){
+        if (configuration.allowPaymentRequestApi != null && !configuration.allowPaymentRequestApi) {
             paymentRequestApi = false;
         }
     };
 
-    let registerEvents = function() {
-        xhr = new XMLHttpRequest();
-    };
-
-    let getAjaxResponse = function(method, route, data) {
+    let getAjaxResponse = function (method, route, data) {
         return new Promise(resolve => {
             xhr.addEventListener('readystatechange', function () {
                 if (this.readyState === requiredState) {
@@ -65,33 +62,33 @@
         });
     };
 
-    let productDataQuery = function(product) {
+    let productDataQuery = function (product) {
         let data = null;
         let method = 'GET';
         let route = `/storefront-api/product/${product.uuid}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
-            if(isJson(result)){
+            if (isJson(result)) {
                 let obj = JSON.parse(result);
                 loadSelectors(obj, product);
             }
         });
     };
 
-    let createShoppingCart = function(id) {
+    let createShoppingCart = function (id) {
         let data = null;
         let method = 'POST';
         let route = '/storefront-api/checkout/cart';
 
         getAjaxResponse(method, route, data).then(function (result) {
-            if(isJson(result)){
+            if (isJson(result)) {
                 contextToken = JSON.parse(result)['x-sw-context-token'];
                 addItemToCart(id);
             }
         });
     };
 
-    let addItemToCart = function(id){
+    let addItemToCart = function (id) {
         let data = JSON.stringify({
             'type': 'product',
             'quantity': 1,
@@ -103,14 +100,14 @@
         let route = `/storefront-api/checkout/cart/line-item/${id}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
-            if(isJson(result)){
+            if (isJson(result)) {
                 let data = JSON.parse(result).data;
                 showPaymentRequest(data);
             }
         });
     };
 
-    let showPaymentRequest = function(productData) {
+    let showPaymentRequest = function (productData) {
         if (!paymentRequestApi || !window.PaymentRequest) {
             if (document.querySelector('div.shopware-popup')) {
                 let popup = document.querySelector('div.shopware-popup');
@@ -133,7 +130,7 @@
         usePaymentRequestApi(productData);
     };
 
-    let usePaymentRequestApi = function(data) {
+    let usePaymentRequestApi = function (data) {
         let productName = data.lineItems[0].label;
         let price = data.price;
         let shipping = data.deliveries;
@@ -195,11 +192,11 @@
             })
     };
 
-    let insertElementAfterTarget = function(newNode, referenceNode) {
+    let insertElementAfterTarget = function (newNode, referenceNode) {
         referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
     };
 
-    let guestOrder = function(customer) {
+    let guestOrder = function (customer) {
         getCountryId(customer.shippingAddress.country).then(function (result) {
             let name = splitName(customer.details.billingAddress.recipient);
             let method = 'POST';
@@ -221,18 +218,20 @@
             data = JSON.stringify(data);
 
             getAjaxResponse(method, route, data).then(function (result) {
-                let obj = JSON.parse(result);
-                alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.billingAddress.street}`);
-                init();
+                if (isJson(result)) {
+                    let obj = JSON.parse(result);
+                    alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.billingAddress.street}`);
+                    init();
+                }
             });
         });
     };
 
-    let splitName = function(fullName) {
+    let splitName = function (fullName) {
         return fullName.split(' ');
     };
 
-    let getShippingOptions = function(shipping) {
+    let getShippingOptions = function (shipping) {
         let shippingOptions = [];
 
         for (let i = 0; i < shipping.length; i++) {
@@ -251,7 +250,7 @@
         return shippingOptions;
     };
 
-    let getCountryId = function(iso) {
+    let getCountryId = function (iso) {
         return new Promise((resolve) => {
             let data = null;
             let countryId = null;
@@ -259,19 +258,21 @@
             let route = '/storefront-api/sales-channel/countries';
 
             getAjaxResponse(method, route, data).then(function (result) {
-                let countries = JSON.parse(result).data;
+                if (isJson(result)) {
+                    let countries = JSON.parse(result).data;
 
-                for (let i = 0; i < countries.length; i++) {
-                    if (iso === countries[i].iso) {
-                        countryId = countries[i].id;
-                        resolve(countryId);
+                    for (let i = 0; i < countries.length; i++) {
+                        if (iso === countries[i].iso) {
+                            countryId = countries[i].id;
+                            resolve(countryId);
+                        }
                     }
                 }
             });
         });
     };
 
-    let loadSelectors = function(obj, product) {
+    let loadSelectors = function (obj, product) {
         if (product.titleSelector) {
             document.querySelector(product.titleSelector).innerHTML = obj.data.name;
         }
@@ -295,7 +296,7 @@
         }
     };
 
-    let getCheckoutContent = function() {
+    let getCheckoutContent = function () {
         return new Promise((resolve) => {
             let xhr = new XMLHttpRequest();
 
@@ -311,7 +312,7 @@
         });
     };
 
-    let addAlternativeCheckout = function(id) {
+    let addAlternativeCheckout = function (id) {
         return new Promise(resolve => {
             let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
@@ -336,10 +337,12 @@
                             country: document.querySelector('.alternative-country').value
                         }
                     };
-                    guestOrder(data);
+                    if(isJson(data)){
+                        guestOrder(data);
 
-                    let popup = document.querySelector('div.shopware-popup');
-                    popup.parentNode.removeChild(popup);
+                        let popup = document.querySelector('div.shopware-popup');
+                        popup.parentNode.removeChild(popup);
+                    }
                 };
 
                 insertElementAfterTarget(div, buyButton);
@@ -347,7 +350,7 @@
         });
     };
 
-    let loadLanguageSnippets = function() {
+    let loadLanguageSnippets = function () {
         languageSnippets = {
             thankYouForYourOrder: 'Thank you for your order!',
             total: 'Total',
@@ -357,7 +360,7 @@
         }
     };
 
-    let getLanguageSnippet = function(snippet) {
+    let getLanguageSnippet = function (snippet) {
         if (languageSnippets[snippet]) {
             return languageSnippets[snippet];
         }
@@ -366,7 +369,7 @@
         }
     };
 
-    let isJson = function(json) {
+    let isJson = function (json) {
         try {
             JSON.parse(json);
         } catch (e) {
