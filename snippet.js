@@ -6,6 +6,7 @@ function shopSnippet() {
     let accessToken;
     let contextToken;
     let languageSnippets;
+    let paymentRequestApi = true;
     let xhr;
     const requiredState = 4;
 
@@ -27,6 +28,10 @@ function shopSnippet() {
             for (let i = 0; i < ids.length; i++) {
                 productDataQuery(ids[i]);
             }
+        }
+
+        if(configuration.allowPaymentRequestApi != null && !configuration.allowPaymentRequestApi){
+            paymentRequestApi = false;
         }
     };
 
@@ -102,7 +107,7 @@ function shopSnippet() {
     };
 
     let showPaymentRequest = function(productData) {
-        if (!window.PaymentRequest) {
+        if (!paymentRequestApi || !window.PaymentRequest) {
             if (document.querySelector('div.shopware-popup')) {
                 let popup = document.querySelector('div.shopware-popup');
                 popup.parentNode.removeChild(popup);
@@ -118,6 +123,7 @@ function shopSnippet() {
             }
 
             addAlternativeCheckout(id);
+            return;
         }
 
         usePaymentRequestApi(productData);
