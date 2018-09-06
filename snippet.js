@@ -1,8 +1,6 @@
-shopSnippet();
-
-function shopSnippet() {
+(function () {
     let host;
-    let ids;
+    let products;
     let accessToken;
     let contextToken;
     let languageSnippets;
@@ -23,11 +21,11 @@ function shopSnippet() {
         }
 
         if (configuration.products) {
-            ids = configuration.products.slice();
+            products = configuration.products.slice();
 
-            for (let i = 0; i < ids.length; i++) {
-                productDataQuery(ids[i]);
-            }
+            products.forEach(function (product){
+                productDataQuery(product);
+            });
         }
 
         if(configuration.allowPaymentRequestApi != null && !configuration.allowPaymentRequestApi){
@@ -67,14 +65,14 @@ function shopSnippet() {
         });
     };
 
-    let productDataQuery = function(id) {
+    let productDataQuery = function(product) {
         let data = null;
         let method = 'GET';
-        let route = `/storefront-api/product/${id.uuid}`;
+        let route = `/storefront-api/product/${product.uuid}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
             let obj = JSON.parse(result);
-            loadSelectors(obj, id);
+            loadSelectors(obj, product);
         });
     };
 
@@ -267,26 +265,26 @@ function shopSnippet() {
         });
     };
 
-    let loadSelectors = function(obj, id) {
-        if (id.titleSelector) {
-            document.querySelector(id.titleSelector).innerHTML = obj.data.name;
+    let loadSelectors = function(obj, product) {
+        if (product.titleSelector) {
+            document.querySelector(product.titleSelector).innerHTML = obj.data.name;
         }
 
-        if (id.descriptionSelector) {
-            document.querySelector(id.descriptionSelector).innerHTML = obj.data.descriptionLong;
+        if (product.descriptionSelector) {
+            document.querySelector(product.descriptionSelector).innerHTML = obj.data.descriptionLong;
         }
 
-        if (id.priceSelector) {
-            document.querySelector(id.priceSelector).innerHTML = obj.data.price.gross + ' ' + configuration.currency[0].symbol;
+        if (product.priceSelector) {
+            document.querySelector(product.priceSelector).innerHTML = obj.data.price.gross + ' ' + configuration.currency[0].symbol;
         }
 
-        if (id.imageSelector) {
-            document.querySelector(id.imageSelector).src = obj.data.cover.media.url;
+        if (product.imageSelector) {
+            document.querySelector(product.imageSelector).src = obj.data.cover.media.url;
         }
 
-        if (id.buttonSelector) {
-            document.querySelector(id.buttonSelector).addEventListener('click', function () {
-                createShoppingCart(id.uuid);
+        if (product.buttonSelector) {
+            document.querySelector(product.buttonSelector).addEventListener('click', function () {
+                createShoppingCart(product.uuid);
             });
         }
     };
@@ -363,4 +361,4 @@ function shopSnippet() {
     };
 
     init();
-}
+})();
