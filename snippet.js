@@ -8,10 +8,12 @@ let contextToken;
 const requiredState = 4;
 
 let languageSnippets;
+let xhr;
 
 init();
 
 function init() {
+    registerEvents();
     loadLanguageSnippets();
 
     if (configuration.host) {
@@ -32,56 +34,57 @@ function init() {
 }
 
 function registerEvents() {
-
+    xhr = new XMLHttpRequest();
 }
 
-function readyStateChange() {
-    let xhr = new XMLHttpRequest();
+function getAjaxResponse(method, route, data) {
+    return new Promise(resolve => {
+        xhr.addEventListener("readystatechange", function () {
+            if (this.readyState === requiredState) {
+                resolve(this.responseText);
+            }
+        });
 
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === requiredState) {
-
+        if(method && route){
+            xhr.open(method, host + route);
         }
+
+        if(accessToken){
+            xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+        }
+
+        if(contextToken){
+            xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+        }
+
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Accept", "application/json");
+
+
+        xhr.send(data);
     });
 }
 
 function productDataQuery(id) {
     let data = null;
+    let method = "GET";
+    let route = "/storefront-api/product/" + id.uuid;
 
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === requiredState) {
-            let obj = JSON.parse(this.responseText);
-            loadSelectors(obj, id);
-        }
+    getAjaxResponse(method, route, data).then(function (result) {
+        let obj = JSON.parse(result);
+        loadSelectors(obj, id);
     });
-
-    xhr.open("GET", host + "/storefront-api/product/" + id.uuid);
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function createShoppingCart(id) {
     let data = null;
+    let method = "POST";
+    let route = "/storefront-api/checkout/cart";
 
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === requiredState) {
-            contextToken = JSON.parse(this.responseText)['x-sw-context-token'];
-            addItemToCart(id);
-        }
+    getAjaxResponse(method, route, data).then(function (result){
+        contextToken = JSON.parse(result)['x-sw-context-token'];
+        addItemToCart(id);
     });
-
-    xhr.open("POST", host + "/storefront-api/checkout/cart");
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function addItemToCart(id) {
@@ -92,23 +95,13 @@ function addItemToCart(id) {
             "id": id
         }
     });
+    let method = "POST";
+    let route = "/storefront-api/checkout/cart/line-item/" + id;
 
-    let xhr = new XMLHttpRequest();
-
-    xhr.addEventListener("readystatechange", function () {
-        if (this.readyState === requiredState) {
-            let data = JSON.parse(this.responseText).data;
-            showPaymentRequest(data);
-        }
+    getAjaxResponse(method, route, data).then(function (result) {
+        let data = JSON.parse(result).data;
+        showPaymentRequest(data);
     });
-
-    xhr.open("POST", host + "/storefront-api/checkout/cart/line-item/" + id);
-    xhr.setRequestHeader("Accept", "application/json");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-    xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-    xhr.send(data);
 }
 
 function showPaymentRequest(productData) {
@@ -200,11 +193,11 @@ function insertElementAfterTarget(newNode, referenceNode) {
 }
 
 function guestOrder(customer) {
-    let name = splitName(customer.details.billingAddress.recipient);
-    let data;
-
     getCountryId(customer.shippingAddress.country).then(function (result) {
-        data = {
+        let name = splitName(customer.details.billingAddress.recipient);
+        let method = "POST";
+        let route = "/storefront-api/checkout/guest-order";
+        let data = {
             firstName: getLanguageSnippet("withoutFirstName"),
             lastName: name[name.length - 1],
             email: customer.payerEmail,
@@ -220,22 +213,11 @@ function guestOrder(customer) {
 
         data = JSON.stringify(data);
 
-        let xhr = new XMLHttpRequest();
-
-        xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === requiredState) {
-                let obj = JSON.parse(this.responseText);
-                alert(getLanguageSnippet("thankYouForYourOrder") + "\n" + getLanguageSnippet("yourGoodsWillBeDeliveredTo") + obj.data.billingAddress.street);
-                init();
-            }
+        getAjaxResponse(method, route, data).then(function (result) {
+            let obj = JSON.parse(result);
+            alert(getLanguageSnippet("thankYouForYourOrder") + "\n" + getLanguageSnippet("yourGoodsWillBeDeliveredTo") + obj.data.billingAddress.street);
+            init();
         });
-
-        xhr.open("POST", host + "/storefront-api/checkout/guest-order");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-        xhr.send(data);
     });
 }
 
@@ -266,29 +248,19 @@ function getCountryId(iso) {
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
+        let method = "GET";
+        let route = "/storefront-api/sales-channel/countries";
 
-        let xhr = new XMLHttpRequest();
+        getAjaxResponse(method, route, data).then(function (result) {
+            let countries = JSON.parse(result).data;
 
-        xhr.addEventListener("readystatechange", function () {
-            if (this.readyState === requiredState) {
-                let countries = JSON.parse(this.responseText).data;
-
-                for (let i = 0; i < countries.length; i++) {
-                    if (iso === countries[i].iso) {
-                        countryId = countries[i].id;
-                        resolve(countryId);
-                    }
+            for (let i = 0; i < countries.length; i++) {
+                if (iso === countries[i].iso) {
+                    countryId = countries[i].id;
+                    resolve(countryId);
                 }
             }
         });
-
-        xhr.open("GET", host + "/storefront-api/sales-channel/countries");
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Accept", "application/json");
-        xhr.setRequestHeader("X-SW-Context-Token", contextToken);
-        xhr.setRequestHeader("X-SW-Access-Key", accessToken);
-
-        xhr.send(data);
     });
 }
 
