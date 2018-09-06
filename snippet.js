@@ -39,7 +39,7 @@ function registerEvents() {
 
 function getAjaxResponse(method, route, data) {
     return new Promise(resolve => {
-        xhr.addEventListener("readystatechange", function () {
+        xhr.addEventListener('readystatechange', function () {
             if (this.readyState === requiredState) {
                 resolve(this.responseText);
             }
@@ -50,15 +50,15 @@ function getAjaxResponse(method, route, data) {
         }
 
         if(accessToken){
-            xhr.setRequestHeader("X-SW-Access-Key", accessToken);
+            xhr.setRequestHeader('X-SW-Access-Key', accessToken);
         }
 
         if(contextToken){
-            xhr.setRequestHeader("X-SW-Context-Token", contextToken);
+            xhr.setRequestHeader('X-SW-Context-Token', contextToken);
         }
 
-        xhr.setRequestHeader("Content-Type", "application/json");
-        xhr.setRequestHeader("Accept", "application/json");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Accept', 'application/json');
 
 
         xhr.send(data);
@@ -67,8 +67,8 @@ function getAjaxResponse(method, route, data) {
 
 function productDataQuery(id) {
     let data = null;
-    let method = "GET";
-    let route = "/storefront-api/product/" + id.uuid;
+    let method = 'GET';
+    let route = '/storefront-api/product/' + id.uuid;
 
     getAjaxResponse(method, route, data).then(function (result) {
         let obj = JSON.parse(result);
@@ -78,8 +78,8 @@ function productDataQuery(id) {
 
 function createShoppingCart(id) {
     let data = null;
-    let method = "POST";
-    let route = "/storefront-api/checkout/cart";
+    let method = 'POST';
+    let route = '/storefront-api/checkout/cart';
 
     getAjaxResponse(method, route, data).then(function (result){
         contextToken = JSON.parse(result)['x-sw-context-token'];
@@ -89,14 +89,14 @@ function createShoppingCart(id) {
 
 function addItemToCart(id) {
     let data = JSON.stringify({
-        "type": "product",
-        "quantity": 1,
-        "payload": {
-            "id": id
+        'type': 'product',
+        'quantity': 1,
+        'payload': {
+            'id': id
         }
     });
-    let method = "POST";
-    let route = "/storefront-api/checkout/cart/line-item/" + id;
+    let method = 'POST';
+    let route = '/storefront-api/checkout/cart/line-item/' + id;
 
     getAjaxResponse(method, route, data).then(function (result) {
         let data = JSON.parse(result).data;
@@ -135,8 +135,8 @@ function usePaymentRequestApi(data) {
         {
             supportedMethods: 'basic-card',
             data: {
-                supportedNetworks: ["visa", "mastercard", "amex"],
-                supportedTypes: ["debit", "credit"]
+                supportedNetworks: ['visa', 'mastercard', 'amex'],
+                supportedTypes: ['debit', 'credit']
             }
         }
     ];
@@ -151,7 +151,7 @@ function usePaymentRequestApi(data) {
                 }
             },
             {
-                label: getLanguageSnippet("vat"),
+                label: getLanguageSnippet('vat'),
                 amount: {
                     currency: configuration.currency[0].type,
                     value: price.calculatedTaxes[0].tax
@@ -160,7 +160,7 @@ function usePaymentRequestApi(data) {
         ],
         shippingOptions: getShippingOptions(shipping),
         total: {
-            label: getLanguageSnippet("total"),
+            label: getLanguageSnippet('total'),
             amount: {
                 currency: configuration.currency[0].type,
                 value: price.totalPrice
@@ -195,10 +195,10 @@ function insertElementAfterTarget(newNode, referenceNode) {
 function guestOrder(customer) {
     getCountryId(customer.shippingAddress.country).then(function (result) {
         let name = splitName(customer.details.billingAddress.recipient);
-        let method = "POST";
-        let route = "/storefront-api/checkout/guest-order";
+        let method = 'POST';
+        let route = '/storefront-api/checkout/guest-order';
         let data = {
-            firstName: getLanguageSnippet("withoutFirstName"),
+            firstName: getLanguageSnippet('withoutFirstName'),
             lastName: name[name.length - 1],
             email: customer.payerEmail,
             billingCountry: result,
@@ -215,14 +215,14 @@ function guestOrder(customer) {
 
         getAjaxResponse(method, route, data).then(function (result) {
             let obj = JSON.parse(result);
-            alert(getLanguageSnippet("thankYouForYourOrder") + "\n" + getLanguageSnippet("yourGoodsWillBeDeliveredTo") + obj.data.billingAddress.street);
+            alert(getLanguageSnippet('thankYouForYourOrder') + '\n' + getLanguageSnippet('yourGoodsWillBeDeliveredTo') + obj.data.billingAddress.street);
             init();
         });
     });
 }
 
 function splitName(fullName) {
-    return fullName.split(" ");
+    return fullName.split(' ');
 }
 
 function getShippingOptions(shipping) {
@@ -248,8 +248,8 @@ function getCountryId(iso) {
     return new Promise((resolve) => {
         let data = null;
         let countryId = null;
-        let method = "GET";
-        let route = "/storefront-api/sales-channel/countries";
+        let method = 'GET';
+        let route = '/storefront-api/sales-channel/countries';
 
         getAjaxResponse(method, route, data).then(function (result) {
             let countries = JSON.parse(result).data;
@@ -274,7 +274,7 @@ function loadSelectors(obj, id) {
     }
 
     if (id.priceSelector) {
-        document.querySelector(id.priceSelector).innerHTML = obj.data.price.gross + " " + configuration.currency[0].symbol;
+        document.querySelector(id.priceSelector).innerHTML = obj.data.price.gross + ' ' + configuration.currency[0].symbol;
     }
 
     if (id.imageSelector) {
@@ -282,7 +282,7 @@ function loadSelectors(obj, id) {
     }
 
     if (id.buttonSelector) {
-        document.querySelector(id.buttonSelector).addEventListener("click", function () {
+        document.querySelector(id.buttonSelector).addEventListener('click', function () {
             createShoppingCart(id.uuid);
         });
     }
@@ -292,13 +292,13 @@ function getCheckoutContent() {
     return new Promise((resolve) => {
         let xhr = new XMLHttpRequest();
 
-        xhr.addEventListener("readystatechange", function () {
+        xhr.addEventListener('readystatechange', function () {
             if (this.readyState === requiredState) {
                 resolve(this.responseText);
             }
         });
 
-        xhr.open("GET", configuration.alternativeCheckoutPath);
+        xhr.open('GET', configuration.alternativeCheckoutPath);
 
         xhr.send();
     });
@@ -313,7 +313,7 @@ function addAlternativeCheckout(id) {
             div.innerHTML = result;
 
             let button = div.getElementsByTagName('button');
-                button[0].setAttribute("class", "btn-submit");
+                button[0].setAttribute('class', 'btn-submit');
                 button[0].onclick = function () {
                 let data = {
                     payerEmail: document.querySelector('.alternative-email').value,
@@ -342,11 +342,11 @@ function addAlternativeCheckout(id) {
 
 function loadLanguageSnippets() {
     languageSnippets = {
-        thankYouForYourOrder: "Thank you for your order!",
-        total: "Total",
-        vat: "VAT",
-        withoutFirstName: "Without first name",
-        yourGoodsWillBeDeliveredTo: "Your goods will be delivered to: "
+        thankYouForYourOrder: 'Thank you for your order!',
+        total: 'Total',
+        vat: 'VAT',
+        withoutFirstName: 'Without first name',
+        yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
     }
 }
 
