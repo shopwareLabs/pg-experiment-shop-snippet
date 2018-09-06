@@ -68,7 +68,7 @@ function getAjaxResponse(method, route, data) {
 function productDataQuery(id) {
     let data = null;
     let method = 'GET';
-    let route = '/storefront-api/product/' + id.uuid;
+    let route = `/storefront-api/product/${id.uuid}`;
 
     getAjaxResponse(method, route, data).then(function (result) {
         let obj = JSON.parse(result);
@@ -96,7 +96,7 @@ function addItemToCart(id) {
         }
     });
     let method = 'POST';
-    let route = '/storefront-api/checkout/cart/line-item/' + id;
+    let route = `/storefront-api/checkout/cart/line-item/${id}`;
 
     getAjaxResponse(method, route, data).then(function (result) {
         let data = JSON.parse(result).data;
@@ -215,7 +215,7 @@ function guestOrder(customer) {
 
         getAjaxResponse(method, route, data).then(function (result) {
             let obj = JSON.parse(result);
-            alert(getLanguageSnippet('thankYouForYourOrder') + '\n' + getLanguageSnippet('yourGoodsWillBeDeliveredTo') + obj.data.billingAddress.street);
+            alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.billingAddress.street}`);
             init();
         });
     });
@@ -322,7 +322,7 @@ function addAlternativeCheckout(id) {
                             addressLine: [document.querySelector('.alternative-address').value],
                             city: document.querySelector('.alternative-city').value,
                             postalCode: document.querySelector('.alternative-postcode').value,
-                            recipient: document.querySelector('.alternative-first-name').value + " " + document.querySelector('.alternative-last-name').value
+                            recipient: `${document.querySelector('.alternative-first-name').value} ${document.querySelector('.alternative-last-name').value}`
                         }
                     },
                     shippingAddress: {
