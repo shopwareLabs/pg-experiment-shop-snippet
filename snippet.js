@@ -71,8 +71,10 @@
         let route = `/storefront-api/product/${product.uuid}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
-            let obj = JSON.parse(result);
-            loadSelectors(obj, product);
+            if(isJson(result)){
+                let obj = JSON.parse(result);
+                loadSelectors(obj, product);
+            }
         });
     };
 
@@ -82,8 +84,10 @@
         let route = '/storefront-api/checkout/cart';
 
         getAjaxResponse(method, route, data).then(function (result) {
-            contextToken = JSON.parse(result)['x-sw-context-token'];
-            addItemToCart(id);
+            if(isJson(result)){
+                contextToken = JSON.parse(result)['x-sw-context-token'];
+                addItemToCart(id);
+            }
         });
     };
 
@@ -99,8 +103,10 @@
         let route = `/storefront-api/checkout/cart/line-item/${id}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
-            let data = JSON.parse(result).data;
-            showPaymentRequest(data);
+            if(isJson(result)){
+                let data = JSON.parse(result).data;
+                showPaymentRequest(data);
+            }
         });
     };
 
@@ -114,9 +120,9 @@
             let id;
             let productId = JSON.stringify(productData.lineItems[0].key);
 
-            for (let i = 0; i < ids.length; i++) {
-                if (JSON.stringify(ids[i].uuid) === productId) {
-                    id = JSON.stringify(ids[i]);
+            for (let i = 0; i < products.length; i++) {
+                if (JSON.stringify(products[i].uuid) === productId) {
+                    id = JSON.stringify(products[i]);
                 }
             }
 
@@ -358,6 +364,19 @@
         else {
             return snippet;
         }
+    };
+
+    let isJson = function(json) {
+        try {
+            JSON.parse(json);
+        } catch (e) {
+            try {
+                JSON.stringify(json);
+            } catch (e) {
+                return false;
+            }
+        }
+        return true;
     };
 
     init();
