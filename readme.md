@@ -48,10 +48,10 @@ The configuration object should look like (with all configurations):
                    imageSelector: '.test-image.two',
                    buttonSelector: '.button-container.two'
                }],
-               currency: [{
+               currency: {
                    symbol: '€',
                    type: 'EUR'
-               }],
+               },
                templates: {
                    checkout: '/templates/checkout.html',
                    buyButton: '/templates/buy-button.html'
