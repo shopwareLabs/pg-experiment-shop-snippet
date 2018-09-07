@@ -126,8 +126,14 @@
             symbol: '€',
             type: 'EUR'
         }],
-        checkoutTemplate: '/templates/checkout.html',
-        buyButtonTemplate: '/templates/buy-button.html',
+        templates: {
+            checkout: '/templates/checkout.html',
+            buyButton: '/templates/buy-button.html'
+        },
+        css: {
+            checkout: '/css/checkout.css',
+            buyButton: '/css/buy-button.css'
+        },
         allowPaymentRequestApi: false,
         languageSnippets: {
             error: "Error",

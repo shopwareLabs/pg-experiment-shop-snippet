@@ -10,18 +10,19 @@
 
     let init = function () {
         loadLanguageSnippets();
+        cssLoader();
 
         xhr = new XMLHttpRequest();
 
-        if(configuration.api) {
+        if (configuration.api) {
             api = configuration.api;
         }
 
-        if(configuration.access_token){
+        if (configuration.access_token) {
             accessToken = configuration.access_token;
         }
 
-        if(!api || !accessToken){
+        if (!api || !accessToken) {
             alert(`${getLanguageSnippet('error')}: ${getLanguageSnippet('theConnectionToTheApiFailed')}.`);
             return;
         }
@@ -297,7 +298,7 @@
             let button;
             let parent = document.querySelector(product.buttonSelector);
 
-            getTemplateContent(configuration.buyButtonTemplate).then(function (result) {
+            getContentAjax(configuration.templates.buyButton).then(function (result) {
                 button = document.createElement('div');
                 button.innerHTML = result;
                 button.addEventListener('click', function () {
@@ -309,7 +310,7 @@
         }
     };
 
-    let getTemplateContent = function (template) {
+    let getContentAjax = function (template) {
         return new Promise((resolve) => {
             let xhr = new XMLHttpRequest();
 
@@ -329,7 +330,7 @@
         return new Promise(resolve => {
             let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
-            getTemplateContent(configuration.checkoutTemplate).then(function (result) {
+            getContentAjax(configuration.templates.checkout).then(function (result) {
                 let div = document.createElement('div');
                 div.innerHTML = result;
 
@@ -362,6 +363,22 @@
             });
         });
     };
+
+    function cssLoader() {
+        let paths = configuration.css;
+        let head = document.getElementsByTagName('head')[0];
+        let link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.media = 'all';
+
+        for (let path in paths) {
+            if (paths.hasOwnProperty(path)) {
+                link.href = paths[path];
+                head.appendChild(link);
+            }
+        }
+    }
 
     let loadLanguageSnippets = function () {
         languageSnippets = configuration.languageSnippets;
