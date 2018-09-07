@@ -12,12 +12,12 @@ Your customers can order your products with only one click without leaving the p
 
 * Before you integrate the shop snippet into your document, you have to hand over a configuration object.
 
-    * This configuration object includes the address to the host, the access token, the product array, the currency, 
-      the path to the alternative checkout and the setting to enable or disable the payment request API.
+    * This configuration object includes the address to the next API, the access token, the product array, the currency, 
+      the path to the checkout template and the setting to enable or disable the payment request API.
     * Into the product array you can add unlimited number of products to your own page.
     * To do this, you have to hand over an UUID of your desired product and a button selector, to make your button to your buy button.
     * Optional you can hand over a price selector, a title selector, a description selector and a image selector.
-    * With the selectors you can place the product data on your page using the id's of your html elements.
+    * With the selectors you can place the product data on your page using the classes of your html elements.
     * The product data will be loaded into your HTML elements and displayed on your page.
     * To enable the payment request API, you must set the allowPaymentRequestApi setting to true or remove the row,
       because the default setting is on true.

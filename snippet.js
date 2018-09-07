@@ -1,5 +1,5 @@
 (function () {
-    let host;
+    let api;
     let products;
     let accessToken;
     let contextToken;
@@ -11,15 +11,20 @@
     let init = function () {
         xhr = new XMLHttpRequest();
 
-        loadLanguageSnippets();
-
-        if (configuration.host) {
-            host = configuration.host;
+        if(configuration.api) {
+            api = configuration.api;
         }
 
-        if (configuration.access_token) {
+        if(configuration.access_token){
             accessToken = configuration.access_token;
         }
+
+        if(!api || !accessToken){
+            alert(`Error: The connection to the API failed.`);
+            return;
+        }
+
+        loadLanguageSnippets();
 
         if (configuration.products) {
             products = configuration.products.slice();
@@ -43,7 +48,7 @@
             });
 
             if (method && route) {
-                xhr.open(method, host + route);
+                xhr.open(method, api + route);
             }
 
             if (accessToken) {
@@ -56,7 +61,6 @@
 
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.setRequestHeader('Accept', 'application/json');
-
 
             xhr.send(data);
         });
@@ -123,7 +127,7 @@
                 }
             }
 
-            addAlternativeCheckout(id);
+            addCheckoutTemplate(id);
             return;
         }
 
@@ -290,13 +294,22 @@
         }
 
         if (product.buttonSelector) {
-            document.querySelector(product.buttonSelector).addEventListener('click', function () {
-                createShoppingCart(product.uuid);
+            let button;
+            let parent = document.querySelector(product.buttonSelector);
+
+            getTemplateContent(configuration.buttonTemplate).then(function (result) {
+                button = document.createElement('div');
+                button.innerHTML = result;
+                button.addEventListener('click', function () {
+                    createShoppingCart(product.uuid);
+                });
+
+                parent.appendChild(button);
             });
         }
     };
 
-    let getCheckoutContent = function () {
+    let getTemplateContent = function (template) {
         return new Promise((resolve) => {
             let xhr = new XMLHttpRequest();
 
@@ -306,17 +319,17 @@
                 }
             });
 
-            xhr.open('GET', configuration.alternativeCheckoutPath);
+            xhr.open('GET', template);
 
             xhr.send();
         });
     };
 
-    let addAlternativeCheckout = function (id) {
+    let addCheckoutTemplate = function (id) {
         return new Promise(resolve => {
             let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
-            getCheckoutContent().then(function (result) {
+            getTemplateContent(configuration.checkoutTemplate).then(function (result) {
                 let div = document.createElement('div');
                 div.innerHTML = result;
 
@@ -324,20 +337,20 @@
                 button[0].setAttribute('class', 'btn-submit');
                 button[0].onclick = function () {
                     let data = {
-                        payerEmail: document.querySelector('.alternative-email').value,
+                        payerEmail: document.querySelector('.email').value,
                         details: {
                             billingAddress: {
-                                addressLine: [document.querySelector('.alternative-address').value],
-                                city: document.querySelector('.alternative-city').value,
-                                postalCode: document.querySelector('.alternative-postcode').value,
-                                recipient: `${document.querySelector('.alternative-first-name').value} ${document.querySelector('.alternative-last-name').value}`
+                                addressLine: [document.querySelector('.address').value],
+                                city: document.querySelector('.city').value,
+                                postalCode: document.querySelector('.postcode').value,
+                                recipient: `${document.querySelector('.first-name').value} ${document.querySelector('.last-name').value}`
                             }
                         },
                         shippingAddress: {
-                            country: document.querySelector('.alternative-country').value
+                            country: document.querySelector('.country').value
                         }
                     };
-                    if(isJson(data)){
+                    if (isJson(data)) {
                         guestOrder(data);
 
                         let popup = document.querySelector('div.shopware-popup');
@@ -351,13 +364,7 @@
     };
 
     let loadLanguageSnippets = function () {
-        languageSnippets = {
-            thankYouForYourOrder: 'Thank you for your order!',
-            total: 'Total',
-            vat: 'VAT',
-            withoutFirstName: 'Without first name',
-            yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
-        }
+        languageSnippets = configuration.languageSnippets;
     };
 
     let getLanguageSnippet = function (snippet) {

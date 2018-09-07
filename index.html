@@ -74,12 +74,7 @@
                 <p class="test-price one">Price</p>
 
                 <div class="product-buy-container">
-                    <a href="#" class="btn btn-primary btn-buy test-button one">
-                        Chargeable order now
-
-                        <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
-                    </a>
-
+                    <div class="button-container one"></div>
                 </div>
             </div>
         </div>
@@ -98,11 +93,7 @@
 
                 <p class="test-price two">Price</p>
 
-                <a href="#" class="btn btn-primary btn-buy test-button two">
-                    Chargeable order now
-
-                    <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
-                </a>
+                <div class="button-container two"></div>
 
             </div>
         </div>
@@ -113,29 +104,37 @@
 </div>
 <script>
     let configuration = {
-        host: 'http://localhost:8000',
+        api: 'http://localhost:8000',
         access_token: 'SWSCCEHUQ1HYDEV0RTZBT3PUBG',
         products: [{
-            uuid: '010b94bd11be4ae29aa52d05a5dc73d9',
+            uuid: '0009beaf0bf24301a464bd5dad6aa5da',
             priceSelector: '.test-price.one',
             titleSelector: '.test-title.one',
             descriptionSelector: '.test-description.one',
             imageSelector: '.test-image.one',
-            buttonSelector: '.test-button.one'
+            buttonSelector: '.button-container.one'
         }, {
-            uuid: '011b125c00324549a5503a2e2a889a08',
+            uuid: '06c7d82ba3564ed688a031439a408834',
             priceSelector: '.test-price.two',
             titleSelector: '.test-title.two',
             descriptionSelector: '.test-description.two',
             imageSelector: '.test-image.two',
-            buttonSelector: '.test-button.two'
+            buttonSelector: '.button-container.two'
         }],
         currency: [{
             symbol: '€',
             type: 'EUR'
         }],
-        alternativeCheckoutPath: "/alternative-checkout.html",
-        allowPaymentRequestApi: false
+        checkoutTemplate: '/templates/checkout.html',
+        buttonTemplate: '/templates/buy-button.html',
+        allowPaymentRequestApi: false,
+        languageSnippets: {
+            thankYouForYourOrder: 'Thank you for your order!',
+            total: 'Total',
+            vat: 'VAT',
+            withoutFirstName: 'Without first name',
+            yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
+        }
     };
 </script>
 <script src="snippet.js"></script>
