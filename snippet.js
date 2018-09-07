@@ -4,7 +4,7 @@
     let accessToken;
     let contextToken;
     let languageSnippets;
-    let paymentRequestApi = true;
+    let paymentRequestApi;
     let xhr;
     const readyStateCode = {
         HEADERS_RECEIVED: 2,
@@ -13,6 +13,7 @@
     };
 
     let init = function () {
+        setDefaultConfiguration();
         loadLanguageSnippets();
         cssLoader();
 
@@ -133,7 +134,6 @@
             addCheckoutTemplate(id);
             return;
         }
-
         usePaymentRequestApi(productData);
     };
 
@@ -157,14 +157,14 @@
                 {
                     label: productName,
                     amount: {
-                        currency: configuration.currency[0].type,
+                        currency: configuration.currency.type,
                         value: price.netPrice
                     }
                 },
                 {
                     label: getLanguageSnippet('vat'),
                     amount: {
-                        currency: configuration.currency[0].type,
+                        currency: configuration.currency.type,
                         value: price.calculatedTaxes[0].tax
                     }
                 }
@@ -173,7 +173,7 @@
             total: {
                 label: getLanguageSnippet('total'),
                 amount: {
-                    currency: configuration.currency[0].type,
+                    currency: configuration.currency.type,
                     value: price.totalPrice
                 }
             }
@@ -246,7 +246,7 @@
                     id: shipping[i].shippingMethod.id,
                     label: shipping[i].shippingMethod.name,
                     amount: {
-                        currency: configuration.currency[0].type,
+                        currency: configuration.currency.type,
                         value: shipping[i].shippingCosts.totalPrice
                     },
                     selected: true
@@ -288,7 +288,7 @@
         }
 
         if (product.priceSelector) {
-            document.querySelector(product.priceSelector).innerHTML = obj.data.price.gross + ' ' + configuration.currency[0].symbol;
+            document.querySelector(product.priceSelector).innerHTML = obj.data.price.gross + ' ' + configuration.currency.symbol;
         }
 
         if (product.imageSelector) {
@@ -362,13 +362,59 @@
         });
     };
 
+    let setDefaultConfiguration = function () {
+        if (!configuration.hasOwnProperty('currency')) {
+            configuration.currency = {
+                symbol: '€',
+                type: 'EUR'
+            }
+        }
+
+        if (!configuration.hasOwnProperty('templates')) {
+            configuration.templates = {
+                checkout: '/templates/checkout.html',
+                buyButton: '/templates/buy-button.html'
+            }
+        }
+
+        if (!configuration.hasOwnProperty('css')) {
+            configuration.css = {
+                checkout: '/css/checkout.css',
+                buyButton: '/css/buy-button.css'
+            }
+        }
+
+        if (!configuration.hasOwnProperty('allowPaymentRequestApi')) {
+            paymentRequestApi = true;
+        }
+
+        let snippets = {
+            error: "Error",
+            thankYouForYourOrder: 'Thank you for your order!',
+            theConnectionToTheApiFailed: 'The connection to the API failed',
+            total: 'Total',
+            vat: 'VAT',
+            withoutFirstName: 'Without first name',
+            yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
+        };
+
+        if (!configuration.hasOwnProperty('languageSnippets')) {
+            configuration.languageSnippets = snippets;
+        } else {
+            for (let snippet in snippets) {
+                if (!configuration.languageSnippets.hasOwnProperty(snippet)) {
+                    configuration.languageSnippets.snippet = snippet;
+                }
+            }
+        }
+    };
+
     function cssLoader() {
         let paths = configuration.css;
         let head = document.getElementsByTagName('head')[0];
         let link = document.createElement('link');
         link.rel = 'stylesheet';
         link.type = 'text/css';
-        link.media = 'all';
 
         for (let path in paths) {
             if (paths.hasOwnProperty(path)) {

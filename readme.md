@@ -25,8 +25,9 @@ Your customers can order your products with only one click without leaving the p
       because the default setting is on true.
     * If the allowPaymentRequestApi setting is on false or the browser is not compatible with the API, 
       the shop snippet displays an checkout on the same page.
+    * All configurations are optional, except for the settings: api, acces_token and products.
 
-The configuration object should look like:
+The configuration object should look like (with all configurations):
    
        <script>
            let configuration = {
