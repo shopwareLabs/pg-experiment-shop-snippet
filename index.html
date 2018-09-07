@@ -93,8 +93,9 @@
 
                 <p class="test-price two">Price</p>
 
-                <div class="button-container two"></div>
-
+                <div class="product-buy-container">
+                    <div class="button-container two"></div>
+                </div>
             </div>
         </div>
         <div class="col-sm-6" style="padding-left:0">
@@ -126,10 +127,12 @@
             type: 'EUR'
         }],
         checkoutTemplate: '/templates/checkout.html',
-        buttonTemplate: '/templates/buy-button.html',
+        buyButtonTemplate: '/templates/buy-button.html',
         allowPaymentRequestApi: false,
         languageSnippets: {
+            error: "Error",
             thankYouForYourOrder: 'Thank you for your order!',
+            theConnectionToTheApiFailed: 'The connection to the API failed',
             total: 'Total',
             vat: 'VAT',
             withoutFirstName: 'Without first name',

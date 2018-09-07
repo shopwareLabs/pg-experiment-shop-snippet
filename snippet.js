@@ -9,6 +9,8 @@
     const requiredState = 4;
 
     let init = function () {
+        loadLanguageSnippets();
+
         xhr = new XMLHttpRequest();
 
         if(configuration.api) {
@@ -20,11 +22,9 @@
         }
 
         if(!api || !accessToken){
-            alert(`Error: The connection to the API failed.`);
+            alert(`${getLanguageSnippet('error')}: ${getLanguageSnippet('theConnectionToTheApiFailed')}.`);
             return;
         }
-
-        loadLanguageSnippets();
 
         if (configuration.products) {
             products = configuration.products.slice();
@@ -297,7 +297,7 @@
             let button;
             let parent = document.querySelector(product.buttonSelector);
 
-            getTemplateContent(configuration.buttonTemplate).then(function (result) {
+            getTemplateContent(configuration.buyButtonTemplate).then(function (result) {
                 button = document.createElement('div');
                 button.innerHTML = result;
                 button.addEventListener('click', function () {
@@ -380,11 +380,7 @@
         try {
             JSON.parse(json);
         } catch (e) {
-            try {
-                JSON.stringify(json);
-            } catch (e) {
-                return false;
-            }
+            return false;
         }
         return true;
     };
