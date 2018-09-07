@@ -6,13 +6,15 @@
     let languageSnippets;
     let paymentRequestApi = true;
     let xhr;
-    const requiredState = 4;
+    const readyStateCode = {
+        HEADERS_RECEIVED: 2,
+        LOADING: 3,
+        DONE: 4
+    };
 
     let init = function () {
         loadLanguageSnippets();
         cssLoader();
-
-        xhr = new XMLHttpRequest();
 
         if (configuration.api) {
             api = configuration.api;
@@ -42,8 +44,9 @@
 
     let getAjaxResponse = function (method, route, data) {
         return new Promise(resolve => {
+            xhr = new XMLHttpRequest();
             xhr.addEventListener('readystatechange', function () {
-                if (this.readyState === requiredState) {
+                if (this.readyState === readyStateCode.DONE) {
                     resolve(this.responseText);
                 }
             });
@@ -71,7 +74,6 @@
         let data = null;
         let method = 'GET';
         let route = `/storefront-api/product/${product.uuid}`;
-
         getAjaxResponse(method, route, data).then(function (result) {
             if (isJson(result)) {
                 let obj = JSON.parse(result);
@@ -315,7 +317,7 @@
             let xhr = new XMLHttpRequest();
 
             xhr.addEventListener('readystatechange', function () {
-                if (this.readyState === requiredState) {
+                if (this.readyState === readyStateCode.DONE) {
                     resolve(this.responseText);
                 }
             });
