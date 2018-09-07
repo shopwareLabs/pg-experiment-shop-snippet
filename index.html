@@ -61,25 +61,20 @@
 <div class="product">
     <div class="row">
         <div class="col-sm-6" style="padding-right:0">
-            <img id="test-image" src="img/product-1.jpg" width="100%" alt="Sample Product">
+            <img class="test-image one" src="img/product-1.jpg" width="100%" alt="Sample Product">
         </div>
         <div class="col-sm-6">
 
             <div class="product-description">
 
-                <h1 id="test-title"></h1>
+                <h1 class="test-title one">Title</h1>
 
-                <p id="test-description"></p>
+                <p class="test-description one">Description</p>
 
-                <p id="test-price"></p>
+                <p class="test-price one">Price</p>
 
                 <div class="product-buy-container">
-                    <a id="test-button" href="#" class="btn btn-primary btn-buy">
-                        Chargeable order now
-
-                        <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
-                    </a>
-
+                    <div class="button-container one"></div>
                 </div>
             </div>
         </div>
@@ -92,43 +87,40 @@
 
             <div class="product-description">
 
-                <h1 id="test-title2"></h1>
+                <h1 class="test-title two">Title</h1>
 
-                <p id="test-description2"></p>
+                <p class="test-description two">Description</p>
 
-                <p id="test-price2"></p>
+                <p class="test-price two">Price</p>
 
-                <a id="test-button2" href="#" class="btn btn-primary btn-buy">
-                    Chargeable order now
-
-                    <span><i class="fa fa-lock"></i> Safe shopping over shopware.com</span>
-                </a>
-
+                <div class="product-buy-container">
+                    <div class="button-container two"></div>
+                </div>
             </div>
         </div>
         <div class="col-sm-6" style="padding-left:0">
-            <img id="test-image2" src="img/product-2.jpg" width="100%" alt="Sample Product">
+            <img class="test-image two" src="img/product-2.jpg" width="100%" alt="Sample Product">
         </div>
     </div>
 </div>
 <script>
-    let configuration = {
-        host: 'http://localhost:8000',
-        access_token: 'SWSCCEHUQ1HYDEV0RTZBT3PUBG',
+    let userConfiguration = {
+        api: 'http://localhost:8000',
+        access_token: 'SWSCY1KYMHG2QNZICE1XATQ1DA',
         products: [{
-            uuid: '010b94bd11be4ae29aa52d05a5dc73d9',
-            priceSelector: 'test-price',
-            titleSelector: 'test-title',
-            descriptionSelector: 'test-description',
-            imageSelector: 'test-image',
-            buttonSelector: 'test-button'
+            uuid: '0073e3a95a044aedafd689dfc12e4622',
+            priceSelector: '.test-price.one',
+            titleSelector: '.test-title.one',
+            descriptionSelector: '.test-description.one',
+            imageSelector: '.test-image.one',
+            buttonSelector: '.button-container.one'
         }, {
-            uuid: '011b125c00324549a5503a2e2a889a08',
-            priceSelector: 'test-price2',
-            titleSelector: 'test-title2',
-            descriptionSelector: 'test-description2',
-            imageSelector: 'test-image2',
-            buttonSelector: 'test-button2'
+            uuid: '0468e587bf9842bf885c1e151867cc99',
+            priceSelector: '.test-price.two',
+            titleSelector: '.test-title.two',
+            descriptionSelector: '.test-description.two',
+            imageSelector: '.test-image.two',
+            buttonSelector: '.button-container.two'
         }]
     };
 </script>
