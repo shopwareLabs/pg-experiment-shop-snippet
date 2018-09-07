@@ -228,7 +228,6 @@
                 if (isJson(result)) {
                     let obj = JSON.parse(result);
                     alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.billingAddress.street}`);
-                    init();
                 }
             });
         });
@@ -337,7 +336,6 @@
                 div.innerHTML = result;
 
                 let button = div.getElementsByTagName('button');
-                button[0].setAttribute('class', 'btn-submit');
                 button[0].onclick = function () {
                     let data = {
                         payerEmail: document.querySelector('.email').value,
@@ -353,12 +351,10 @@
                             country: document.querySelector('.country').value
                         }
                     };
-                    if (isJson(data)) {
-                        guestOrder(data);
+                    guestOrder(data);
 
-                        let popup = document.querySelector('div.shopware-popup');
-                        popup.parentNode.removeChild(popup);
-                    }
+                    let popup = document.querySelector('div.shopware-popup');
+                    popup.parentNode.removeChild(popup);
                 };
 
                 insertElementAfterTarget(div, buyButton);
