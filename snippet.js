@@ -5,7 +5,32 @@
     let contextToken;
     let languageSnippets;
     let paymentRequestApi;
+    let configuration;
     let xhr;
+    let defaultConfiguration = {
+        currency: {
+            symbol: '€',
+            type: 'EUR'
+        },
+        templates: {
+            checkout: '/templates/checkout.html',
+            buyButton: '/templates/buy-button.html'
+        },
+        css: {
+            checkout: '/css/checkout.css',
+            buyButton: '/css/buy-button.css'
+        },
+        allowPaymentRequestApi: true,
+        languageSnippets: {
+            error: "Error",
+            thankYouForYourOrder: 'Thank you for your order!',
+            theConnectionToTheApiFailed: 'The connection to the API failed',
+            total: 'Total',
+            vat: 'VAT',
+            withoutFirstName: 'Without first name',
+            yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
+        }
+    };
     const readyStateCode = {
         HEADERS_RECEIVED: 2,
         LOADING: 3,
@@ -13,7 +38,9 @@
     };
 
     let init = function () {
-        setDefaultConfiguration();
+        paymentRequestApi = true;
+        configuration = {...defaultConfiguration, ...userConfiguration};
+
         loadLanguageSnippets();
         cssLoader();
 
@@ -38,7 +65,7 @@
             });
         }
 
-        if (configuration.allowPaymentRequestApi != null && !configuration.allowPaymentRequestApi) {
+        if (!configuration.allowPaymentRequestApi) {
             paymentRequestApi = false;
         }
     };
@@ -360,53 +387,6 @@
                 insertElementAfterTarget(div, buyButton);
             });
         });
-    };
-
-    let setDefaultConfiguration = function () {
-        if (!configuration.hasOwnProperty('currency')) {
-            configuration.currency = {
-                symbol: '€',
-                type: 'EUR'
-            }
-        }
-
-        if (!configuration.hasOwnProperty('templates')) {
-            configuration.templates = {
-                checkout: '/templates/checkout.html',
-                buyButton: '/templates/buy-button.html'
-            }
-        }
-
-        if (!configuration.hasOwnProperty('css')) {
-            configuration.css = {
-                checkout: '/css/checkout.css',
-                buyButton: '/css/buy-button.css'
-            }
-        }
-
-        if (!configuration.hasOwnProperty('allowPaymentRequestApi')) {
-            paymentRequestApi = true;
-        }
-
-        let snippets = {
-            error: "Error",
-            thankYouForYourOrder: 'Thank you for your order!',
-            theConnectionToTheApiFailed: 'The connection to the API failed',
-            total: 'Total',
-            vat: 'VAT',
-            withoutFirstName: 'Without first name',
-            yourGoodsWillBeDeliveredTo: 'Your goods will be delivered to: '
-        };
-
-        if (!configuration.hasOwnProperty('languageSnippets')) {
-            configuration.languageSnippets = snippets;
-        } else {
-            for (let snippet in snippets) {
-                if (!configuration.languageSnippets.hasOwnProperty(snippet)) {
-                    configuration.languageSnippets.snippet = snippet;
-                }
-            }
-        }
     };
 
     function cssLoader() {
