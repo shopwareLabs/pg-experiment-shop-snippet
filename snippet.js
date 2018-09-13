@@ -13,12 +13,12 @@
             type: 'EUR'
         },
         templates: {
-            checkout: '/templates/checkout.html',
-            buyButton: '/templates/buy-button.html'
+            checkout: 'https://s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/templates/checkout.html',
+            buyButton: 'https://s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/templates/buy-button.html'
         },
         css: {
-            checkout: '/css/checkout.css',
-            buyButton: '/css/buy-button.css'
+            checkout: 'https://s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/css/checkout.css',
+            buyButton: 'https://s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/css/buy-button.css'
         },
         allowPaymentRequestApi: true,
         languageSnippets: {
