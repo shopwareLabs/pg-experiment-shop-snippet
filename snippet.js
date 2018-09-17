@@ -12,10 +12,6 @@
             symbol: '€',
             type: 'EUR'
         },
-        templates: {
-            checkout: '//s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/templates/checkout.html',
-            buyButton: '//s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/templates/buy-button.html'
-        },
         css: {
             checkout: '//s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/css/checkout.css',
             buyButton: '//s3.eu-central-1.amazonaws.com/playground-app-assets/shop-snippet/css/buy-button.css'
@@ -326,70 +322,119 @@
             let button;
             let parent = document.querySelector(product.buttonSelector);
 
-            getContentAjax(configuration.templates.buyButton).then(function (result) {
-                button = document.createElement('div');
-                button.innerHTML = result;
-                button.addEventListener('click', function () {
-                    createShoppingCart(product.uuid);
-                });
-
-                parent.appendChild(button);
+            button = document.createElement('div');
+            button.innerHTML = getBuyButton();
+            button.addEventListener('click', function () {
+                createShoppingCart(product.uuid);
             });
+
+            parent.appendChild(button);
         }
-    };
-
-    let getContentAjax = function (template) {
-        return new Promise((resolve) => {
-            let xhr = new XMLHttpRequest();
-
-            xhr.addEventListener('readystatechange', function () {
-                if (this.readyState === readyStateCode.DONE) {
-                    resolve(this.responseText);
-                }
-            });
-
-            xhr.open('GET', template);
-
-            xhr.send();
-        });
     };
 
     let addCheckoutTemplate = function (id) {
         return new Promise(resolve => {
             let buyButton = document.querySelector(JSON.parse(id).buttonSelector);
 
-            getContentAjax(configuration.templates.checkout).then(function (result) {
-                let div = document.createElement('div');
-                div.innerHTML = result;
+            let div = document.createElement('div');
+            div.innerHTML = getPopUp();
 
-                let button = div.getElementsByTagName('button');
-                button[0].onclick = function () {
-                    let data = {
-                        payerEmail: document.querySelector('.email').value,
-                        details: {
-                            billingAddress: {
-                                addressLine: [document.querySelector('.address').value],
-                                city: document.querySelector('.city').value,
-                                postalCode: document.querySelector('.postcode').value,
-                                recipient: `${document.querySelector('.first-name').value} ${document.querySelector('.last-name').value}`
-                            }
-                        },
-                        shippingAddress: {
-                            country: document.querySelector('.country').value
+            let button = div.getElementsByTagName('button');
+            button[0].onclick = function () {
+                let data = {
+                    payerEmail: document.querySelector('.email').value,
+                    details: {
+                        billingAddress: {
+                            addressLine: [document.querySelector('.address').value],
+                            city: document.querySelector('.city').value,
+                            postalCode: document.querySelector('.postcode').value,
+                            recipient: `${document.querySelector('.first-name').value} ${document.querySelector('.last-name').value}`
                         }
-                    };
-                    guestOrder(data);
-
-                    let popup = document.querySelector('div.shopware-popup');
-                    popup.parentNode.removeChild(popup);
+                    },
+                    shippingAddress: {
+                        country: document.querySelector('.country').value
+                    }
                 };
+                guestOrder(data);
 
-                insertElementAfterTarget(div, buyButton);
-            });
+                let popup = document.querySelector('div.shopware-popup');
+                popup.parentNode.removeChild(popup);
+            };
+
+            insertElementAfterTarget(div, buyButton);
         });
     };
 
-    function cssLoader() {
+    function getBuyButton() {
+        let button =
+            '<a href="#" class="btn btn-primary btn-buy">' +
+            'Chargeable order now' +
+            '<span><i class="fa fa-lock">' +
+            '</i>Safe shopping over shopware.com</span>' +
+            '</a>';
+
+        return button;
+    }
+
+    let getPopUp = function () {
+        let popup =
+            '<div class="shopware-popup">' +
+            '<div class="title">' +
+            '<i class="fa fa-lock"></i> Encrypted shopping through shopware.com' +
+            '</div>' +
+            '<div class="content">' +
+            '<div class="form-element">' +
+            '<label>First name</label>' +
+            '<input type="text" class="form-control first-name" placeholder="First name">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>last name</label>' +
+            '<input type="text" class="form-control last-name" placeholder="Last name">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>E-Mail</label>' +
+            '<input type="email" class="form-control email" placeholder="E-Mail">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>Street name</label>' +
+            '<input type="text" class="form-control address" placeholder="Street name">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>Postcode</label>' +
+            '<input type="text" class="form-control postcode" placeholder="Postcode">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>City</label>' +
+            '<input type="text" class="form-control city" placeholder="City">' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>Country</label>' +
+            '<select class="country" name="country">' +
+            '<option value="DE" selected>Germany</option>' +
+            '</select>' +
+            '</div>' +
+            '<div class="form-element">' +
+            '<label>Payment</label>' +
+            '<select name="payment">' +
+            '<option selected>PayPal</option>' +
+            '<option selected>Klarna</option>' +
+            '<option selected>Credit card</option>' +
+            '<option selected>payment in advance</option>' +
+            '<option selected>Cash on delivery</option>' +
+            '</select>' +
+            '</div>' +
+            '<div class="form-action">' +
+            '<button class="btn btn-primary btn-submit">' +
+            '<i class="fa fa-angle-right"></i> Chargeable order now' +
+            '</button>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+        return popup;
+    };
+
+    let cssLoader = function () {
         let paths = configuration.css;
         let head = document.getElementsByTagName('head')[0];
         let link = document.createElement('link');
@@ -402,7 +447,7 @@
                 head.appendChild(link);
             }
         }
-    }
+    };
 
     let loadLanguageSnippets = function () {
         languageSnippets = configuration.languageSnippets;
