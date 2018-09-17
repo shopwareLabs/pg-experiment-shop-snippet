@@ -35,18 +35,18 @@ The configuration object should look like (with all configurations):
                access_token: 'SWSCCEHUQ1HYDEV0RTZBT3PUBG',
                products: [{
                    uuid: '0009beaf0bf24301a464bd5dad6aa5da',
-                   priceSelector: '.test-price.one',
-                   titleSelector: '.test-title.one',
-                   descriptionSelector: '.test-description.one',
-                   imageSelector: '.test-image.one',
-                   buttonSelector: '.button-container.one'
+                   priceSelector: '.price1',
+                   titleSelector: '.title1',
+                   descriptionSelector: '.description1',
+                   imageSelector: '.image1',
+                   buttonSelector: '.button-container1'
                }, {
                    uuid: '06c7d82ba3564ed688a031439a408834',
-                   priceSelector: '.test-price.two',
-                   titleSelector: '.test-title.two',
-                   descriptionSelector: '.test-description.two',
-                   imageSelector: '.test-image.two',
-                   buttonSelector: '.button-container.two'
+                   priceSelector: '.price2',
+                   titleSelector: '.title2',
+                   descriptionSelector: '.description2',
+                   imageSelector: '.image2',
+                   buttonSelector: '.button-container2'
                }],
                currency: {
                    symbol: '€',
