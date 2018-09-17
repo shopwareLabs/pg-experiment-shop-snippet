@@ -12,9 +12,8 @@ Your customers can order your products with only one click without leaving the p
 
 * Before you integrate the shop snippet into your document, you have to hand over a configuration object.
 
-    * This configuration object includes the address to the next API, the access token, the product array, the currency, 
-      the paths to the using templates and CSS files, the setting to enable or disable the payment request API
-      and the snippets for the languages.
+    * This configuration object includes the address to the next API, the access token, the product array, the currency,
+      the snippets for the languages and the setting to enable or disable the payment request API.
     * Into the product array you can add unlimited number of products to your own page.
     * To do this, you have to hand over an UUID of your desired product and a button selector, to make your button to your buy button.
     * Optional you can hand over a price selector, a title selector, a description selector and a image selector.
@@ -26,6 +25,7 @@ Your customers can order your products with only one click without leaving the p
     * If the allowPaymentRequestApi setting is on false or the browser is not compatible with the API, 
       the shop snippet displays an checkout on the same page.
     * All configurations are optional, except for the settings: api, acces_token and products.
+    * Important: In your sales channel you have to set the language to english by default.
 
 The configuration object should look like (with all configurations):
    
