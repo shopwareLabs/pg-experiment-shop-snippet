@@ -10,27 +10,48 @@ Your customers can order your products with only one click without leaving the p
 
 ## How can i use it?
 
+* Important: In your sales channel you have to set the language to english by default.
+    * The Next API has at the moment problems, if you don't do this. 
+    
 * Before you integrate the shop snippet into your document, you have to hand over a configuration object.
-
-    * This configuration object includes the address to the next API, the access token, the product array, the currency,
-      the snippets for the languages and the setting to enable or disable the payment request API.
-    * Into the product array you can add unlimited number of products to your own page.
-    * To do this, you have to hand over an UUID of your desired product and a button selector, to make your button to your buy button.
-    * Optional you can hand over a price selector, a title selector, a description selector and a image selector.
-    * With the selectors you can place the product data on your page using the classes of your html elements.
-    * The product data will be loaded into your HTML elements and displayed on your page.
-    * The button selector has to be a div container into which the buy button will be injected.
-    * To enable the payment request API, you must set the allowPaymentRequestApi setting to true or remove the row,
-      because the default setting is on true.
-    * If the allowPaymentRequestApi setting is on false or the browser is not compatible with the API, 
-      the shop snippet displays an checkout on the same page.
-    * All configurations are optional, except for the settings: api, acces_token and products.
-    * Important: In your sales channel you have to set the language to english by default.
-
-The configuration object should look like (with all configurations):
+    
+    * The mandatory fields in your configuration object are:
+        * the address to the Next API (Host)
+            * example: pg.shopware.com
+        * your access token
+        * the product array
+            * Into the product array you can add unlimited number of products to your own page.
+              To do this, you have to hand over an UUID of your desired product and a button selector, to make your button to your buy button.
+              The UUID's are at the end of your browser path, on the page of your desired product in the storefront.
+              Example UUID: 0009beaf0bf24301a464bd5dad6aa5da
+            * The button selector has to be a div container into which the buy button will be injected.
+            * Optional you can hand over a price selector, a title selector, a description selector and an image selector.
+              With the selectors you can place the product data on your page using the classes of your html elements.
+              The product data will be loaded into your HTML elements and displayed on your page.
+              
+    * The optional fields in your configuration object are:
+        * the currency
+            * at the moment is only the Euro available.
+        * the paths to your CSS files
+            * if you want to change the style of your checkout or your buy button,
+              you can load your own css files into the Shop snippet.
+        * the snippets for the languages
+            * you can use your own or extend the old snippets.
+        * the setting to enable or disable the Payment request API
+            * to enable the Payment request API, you must set the allowPaymentRequestApi setting to true or remove the row,
+              because the default setting is on true.
+            * to disable the Payment request API, you must set the allowPaymentRequestApi setting to false.
+            * If the allowPaymentRequestApi setting is on false or the browser is not compatible with the Payment request API, 
+              the Shop snippet displays a checkout on the same page.
+              
+    * The optional fields can be omitted
+    
+* Now you can integrate the Shop snippet.
+                  
+The final script with the configuration object could look like this (with all configurations):
    
        <script>
-           let configuration = {
+           let userConfiguration = {
                api: 'http://localhost:8000',
                access_token: 'SWSCCEHUQ1HYDEV0RTZBT3PUBG',
                products: [{
@@ -52,10 +73,6 @@ The configuration object should look like (with all configurations):
                    symbol: '€',
                    type: 'EUR'
                },
-               templates: {
-                   checkout: '/templates/checkout.html',
-                   buyButton: '/templates/buy-button.html'
-               },
                css: {
                    checkout: '/css/checkout.css',
                    buyButton: '/css/buy-button.css'
@@ -72,9 +89,4 @@ The configuration object should look like (with all configurations):
                }
            };
        </script>
-
-* Now you can integrate the shop snippet.
-
-This could look like:
-
-        <script src="snippet.js"></script>
+       <script src="snippet.js"></script>
