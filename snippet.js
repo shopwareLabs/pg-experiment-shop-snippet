@@ -366,19 +366,15 @@
     };
 
     function getBuyButton() {
-        let button =
-            '<a href="#" class="btn btn-primary btn-buy">' +
+        return '<a href="#" class="btn btn-primary btn-buy">' +
             'Chargeable order now' +
             '<span><i class="fa fa-lock">' +
             '</i>Safe shopping over shopware.com</span>' +
             '</a>';
-
-        return button;
     }
 
     let getPopUp = function () {
-        let popup =
-            '<div class="shopware-popup">' +
+        return '<div class="shopware-popup">' +
             '<div class="title">' +
             '<i class="fa fa-lock"></i> Encrypted shopping through shopware.com' +
             '</div>' +
@@ -430,8 +426,6 @@
             '</div>' +
             '</div>' +
             '</div>';
-
-        return popup;
     };
 
     let cssLoader = function () {
