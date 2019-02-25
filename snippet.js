@@ -97,7 +97,7 @@
     let productDataQuery = function (product) {
         let data = null;
         let method = 'GET';
-        let route = `/storefront-api/product/${product.uuid}`;
+        let route = `/storefront-api/v1/product/${product.uuid}`;
         getAjaxResponse(method, route, data).then(function (result) {
             if (isJson(result)) {
                 let obj = JSON.parse(result);
@@ -109,7 +109,7 @@
     let createShoppingCart = function (id) {
         let data = null;
         let method = 'POST';
-        let route = '/storefront-api/checkout/cart';
+        let route = '/storefront-api/v1/checkout/cart';
 
         getAjaxResponse(method, route, data).then(function (result) {
             if (isJson(result)) {
@@ -128,7 +128,7 @@
             }
         });
         let method = 'POST';
-        let route = `/storefront-api/checkout/cart/line-item/${id}`;
+        let route = `/storefront-api/v1/checkout/cart/line-item/${id}`;
 
         getAjaxResponse(method, route, data).then(function (result) {
             if (isJson(result)) {
@@ -204,6 +204,7 @@
 
         const options = {
             requestPayerEmail: true,
+            requestPayerName: true,
             requestShipping: true,
         };
 
@@ -230,15 +231,15 @@
         getCountryId(customer.shippingAddress.country).then(function (result) {
             let name = splitName(customer.details.billingAddress.recipient);
             let method = 'POST';
-            let route = '/storefront-api/checkout/guest-order';
+            let route = '/storefront-api/v1/checkout/guest-order';
             let data = {
                 firstName: getLanguageSnippet('withoutFirstName'),
                 lastName: name[name.length - 1],
                 email: customer.payerEmail,
-                billingCountry: result,
-                billingZipcode: customer.details.billingAddress.postalCode,
-                billingCity: customer.details.billingAddress.city,
-                billingStreet: customer.details.billingAddress.addressLine[0]
+                'billingAddress.country': result,
+                'billingAddress.zipcode': customer.details.billingAddress.postalCode,
+                'billingAddress.city': customer.details.billingAddress.city,
+                'billingAddress.street': customer.details.billingAddress.addressLine[0]
             };
 
             if (name.length > 1) {
@@ -250,7 +251,7 @@
             getAjaxResponse(method, route, data).then(function (result) {
                 if (isJson(result)) {
                     let obj = JSON.parse(result);
-                    alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.billingAddress.street}`);
+                    alert(`${getLanguageSnippet('thankYouForYourOrder')} \n ${getLanguageSnippet('yourGoodsWillBeDeliveredTo')} ${obj.data.addresses[0].street}`);
                 }
             });
         });
@@ -284,7 +285,7 @@
             let data = null;
             let countryId = null;
             let method = 'GET';
-            let route = '/storefront-api/sales-channel/countries';
+            let route = '/storefront-api/v1/country';
 
             getAjaxResponse(method, route, data).then(function (result) {
                 if (isJson(result)) {
